@@ -1,6 +1,6 @@
 from kombu import Connection
 
-rabbitmq_url = "amqp://localhost:5672//"
+rabbitmq_url = "localhost"
 
 conn = Connection(rabbitmq_url)
 print("-----declare connection-----")
