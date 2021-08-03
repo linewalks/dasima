@@ -2,9 +2,16 @@ from kombu import Connection, Exchange, Queue
 
 
 class ClueMQ:
-  def __init__(self, host, exchange, queue, queue_routing_key, exchange_type="topic"):
+  def __init__(
+        self,
+        host: str = "localhost",
+        exchange_name: str = "cluemq",
+        queue_name: str = "cluemq",
+        queue_routing_key: str = "cluemq.test",
+        exchange_type: str = "topic"
+    ):
     self.conn = Connection(host)
-    self.exchange_name = exchange
+    self.exchange_name = exchange_name
     self.exchange_type = exchange_type
     self.exchange = Exchange(
         name=self.exchange_name,
@@ -12,7 +19,7 @@ class ClueMQ:
         channel=self.conn,
         durable=True
     )
-    self.queue_name = queue
+    self.queue_name = queue_name
     self.routing_key = queue_routing_key
     self.queue = Queue(
       name=self.queue_name,
@@ -25,11 +32,11 @@ class ClueMQ:
 
   def connect(self):
     self.conn.connect()
-    print("-----AMQP connection-----")
+    print("-----Mesage Queue connection connected-----")
 
   def close(self):
     self.conn.close()
-    print("-----AMQP close-----")
+    print("-----Mesage Queue connection closed-----")
 
   def setup(self):
     self.exchange.declare()
