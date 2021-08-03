@@ -1,4 +1,27 @@
-from kombu import Connection, Exchange, Queue
+from kombu import Connection, Exchange, Queue, Producer
+from kombu.mixins import ConsumerMixin
+
+
+class Worker(ConsumerMixin):
+    def __init__(
+        self,
+        connection: Connection,
+        queue_list: list
+      ):
+        self.connection = connection
+        self.queue_list = queue_list
+
+    def get_consumers(self, Consumer, channel):
+        return [Consumer(queues=self.queue_list,
+                         accept=["json"],
+                         callbacks=[self.on_task])]
+
+    def on_task(self, body, message):
+        try:
+            print(body)
+        except Exception as exc:
+            print("task raised exception: %r", exc)
+        message.ack()
 
 
 class ClueMQ:
@@ -28,7 +51,8 @@ class ClueMQ:
       auto_delete=False,
       exchange=self.exchange,
       routing_key=self.routing_key
-   )
+    )
+    self.worker = Worker(self.conn, [self.queue])
 
   def connect(self):
     self.conn.connect()
@@ -52,3 +76,26 @@ class ClueMQ:
     exchange: {self.exchange},
     routing key: {self.routing_key},
     """)
+  
+  def send_message(
+      self,
+      data: dict,
+  ):
+    producer = Producer(self.conn)
+    producer.publish(
+        data,
+        exchange=self.exchange,
+        routing_key=self.routing_key,
+        serializer="json"
+    )
+  
+  def run(self):
+    self.connect()
+
+    try:
+        self.worker.run()
+
+    except KeyboardInterrupt:
+        print("Terminate worker")
+
+    self.close()
