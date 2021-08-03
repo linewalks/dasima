@@ -8,8 +8,8 @@ from clue_mq import ClueMQ
 
 cluemq = ClueMQ(
     host="localhost",
-    exchange="clue",
-    queue="generator",
+    exchange_name="clue",
+    queue_name="generator",
     queue_routing_key="clue.generator",
     exchange_type="topic"
 )
