@@ -1,6 +1,6 @@
 import sys
 from os import path
-sys.path.append(path.dirname( path.dirname( path.abspath(__file__) ) ))
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from kombu import Connection, Exchange, Queue
 from clue_mq import ClueMQ
