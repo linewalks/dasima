@@ -3,19 +3,24 @@ from kombu import Connection, Exchange, Producer, Queue
 from kombu.mixins import ConsumerMixin
 
 
+# The basic class ConsumerMixin would need a :attr:`connection` attribute
+# which must be a :class:`~kombu.Connection` instance,
+# and define a :meth:`get_consumers` method that returns a list of :class:`kombu.Consumer` instances to use.
 class Worker(ConsumerMixin):
   def __init__(
       self,
       connection: Connection,
-      queue_list: List[Queue]
+      queue_list: List[Queue],
+      accept_type: List[str],
   ):
     self.connection = connection
     self.queue_list = queue_list
+    self.accept_type = accept_type
 
   def get_consumers(self, Consumer, channel):
     return [Consumer(
         queues=self.queue_list,
-        accept=["json"],
+        accept=self.accept_type,
         callbacks=[self.on_task]
     )]
 
@@ -34,7 +39,8 @@ class ClueMQ:
       exchange_name: str = "cluemq",
       queue_name: str = "cluemq",
       queue_routing_key: str = "cluemq.test",
-      exchange_type: str = "topic"
+      exchange_type: str = "topic",
+      accept_type: List[str] = ["json"]
   ):
     self.conn = Connection(host)
     self.exchange_name = exchange_name
@@ -55,7 +61,7 @@ class ClueMQ:
         exchange=self.exchange,
         routing_key=self.routing_key
     )
-    self.worker = Worker(self.conn, [self.queue])
+    self.worker = Worker(self.conn, [self.queue], accept_type)
 
   def connect(self):
     self.conn.connect()
@@ -97,7 +103,6 @@ class ClueMQ:
 
     try:
         self.worker.run()
-
     except KeyboardInterrupt:
         print("Terminate worker")
 
