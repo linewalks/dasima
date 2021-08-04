@@ -89,13 +89,14 @@ class ClueMQ:
   def send_message(
       self,
       data: dict,
+      serializer: str = "json"
   ):
     producer = Producer(self.conn)
     producer.publish(
         data,
         exchange=self.exchange,
         routing_key=self.routing_key,
-        serializer="json"
+        serializer=serializer
     )
 
   def run(self):

@@ -15,6 +15,7 @@ cluemq = ClueMQ(
 cluemq.connect()
 cluemq.setup()
 
-cluemq.send_message({"data": "hello"})
+# serializer ex) "json", "pickle"...
+cluemq.send_message({"data": "hello"}, serializer="json")
 
 cluemq.close()
