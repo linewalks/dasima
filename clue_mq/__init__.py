@@ -1,35 +1,35 @@
-from typing import List
+from typing import List, Callable
 from kombu import Connection, Exchange, Producer, Queue
-from kombu.mixins import ConsumerMixin
+from kombu.mixins import ConsumerProducerMixin
 
 
 # The basic class ConsumerMixin would need a :attr:`connection` attribute
 # which must be a :class:`~kombu.Connection` instance,
 # and define a :meth:`get_consumers` method that returns a list of :class:`kombu.Consumer` instances to use.
-class Worker(ConsumerMixin):
+class Worker(ConsumerProducerMixin):
   def __init__(
       self,
       connection: Connection,
       queue_list: List[Queue],
+      on_task_list: List[Callable],
       accept_type: List[str],
   ):
     self.connection = connection
     self.queue_list = queue_list
+    self.on_task_list = on_task_list
     self.accept_type = accept_type
 
   def get_consumers(self, Consumer, channel):
-    return [Consumer(
-        queues=self.queue_list,
-        accept=self.accept_type,
-        callbacks=[self.on_task]
-    )]
-
-  def on_task(self, body, message):
-    try:
-        print(body)
-    except Exception as exc:
-        print("task raised exception: %r", exc)
-    message.ack()
+    consumer_list = []
+    for queue, on_task in zip(self.queue_list, self.on_task_list):
+      consumer_list.append(
+          Consumer(
+              queues=[queue],
+              accept=self.accept_type,
+              callbacks=[on_task]
+          )
+      )
+    return consumer_list
 
 
 class ClueMQ:
@@ -37,8 +37,6 @@ class ClueMQ:
       self,
       host: str = "localhost",
       exchange_name: str = "cluemq",
-      queue_name: str = "cluemq",
-      queue_routing_key: str = "cluemq.test",
       exchange_type: str = "topic",
       accept_type: List[str] = ["json"]
   ):
@@ -51,17 +49,9 @@ class ClueMQ:
         channel=self.conn,
         durable=True
     )
-    self.queue_name = queue_name
-    self.routing_key = queue_routing_key
-    self.queue = Queue(
-        name=self.queue_name,
-        channel=self.conn,
-        durable=True,
-        auto_delete=False,
-        exchange=self.exchange,
-        routing_key=self.routing_key
-    )
-    self.worker = Worker(self.conn, [self.queue], accept_type)
+    self.queue_list = []
+    self.on_task_list = []
+    self.worker = Worker(self.conn, self.queue_list, self.on_task_list, accept_type)
 
   def connect(self):
     self.conn.connect()
@@ -78,24 +68,18 @@ class ClueMQ:
     exchange name: {self.exchange_name},
     exchange type: {self.exchange_type},
     """)
-    self.queue.declare()
-    print("-----declare queue-----")
-    print(f"""
-    queue name: {self.queue_name}
-    exchange: {self.exchange},
-    routing key: {self.routing_key},
-    """)
 
   def send_message(
       self,
       data: dict,
+      routing_key: str,
       serializer: str = "json"
   ):
     producer = Producer(self.conn)
     producer.publish(
         data,
         exchange=self.exchange,
-        routing_key=self.routing_key,
+        routing_key=routing_key,
         serializer=serializer
     )
 
@@ -108,3 +92,26 @@ class ClueMQ:
         print("Terminate worker")
 
     self.close()
+  
+  def add_queue(self, exchange, routing_key, func):
+    queue_name = func.__name__
+    queue = Queue(
+        name=queue_name,
+        channel=self.conn,
+        durable=False,
+        auto_delete=False,
+        exchange=self.exchange,
+        routing_key=routing_key
+    )
+
+    def on_task(body, message):
+      try:
+        result = func(**body)
+        print(result)
+      except Exception as exc:
+        print("task raised exception: %r", exc)
+      message.ack()
+
+    queue.declare()
+    self.queue_list.append(queue)
+    self.on_task_list.append(on_task)

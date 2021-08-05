@@ -9,8 +9,6 @@ from clue_mq import ClueMQ
 cluemq = ClueMQ(
     host="localhost",
     exchange_name="clue",
-    queue_name="generator",
-    queue_routing_key="clue.generator",
     exchange_type="topic"
 )
 cluemq.connect()
