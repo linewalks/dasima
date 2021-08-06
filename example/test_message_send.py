@@ -8,14 +8,14 @@ from clue_mq import ClueMQ
 cluemq = ClueMQ(
     host="localhost",
     exchange_name="clue",
-    queue_name="generator",
-    queue_routing_key="clue.generator",
     exchange_type="topic"
 )
 cluemq.connect()
 cluemq.setup()
 
 # serializer ex) "json", "pickle"...
-cluemq.send_message({"data": "hello"}, serializer="json")
+cluemq.send_message({"x": 2, "y": 3}, routing_key="clue.add", serializer="json")
+cluemq.send_message({"x": 2, "y": 3}, routing_key="clue.mul", serializer="json")
+cluemq.send_message({"x": 2, "y": 3}, routing_key="clue.div", serializer="json")
 
 cluemq.close()
