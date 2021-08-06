@@ -20,16 +20,14 @@ class Worker(ConsumerProducerMixin):
     self.accept_type = accept_type
 
   def get_consumers(self, Consumer, channel):
-    consumer_list = []
-    for queue, on_task in zip(self.queue_list, self.on_task_list):
-      consumer_list.append(
-          Consumer(
-              queues=[queue],
-              accept=self.accept_type,
-              callbacks=[on_task]
-          )
-      )
-    return consumer_list
+    return [
+        Consumer(
+            queues=[queue],
+            accept=self.accept_type,
+            callbacks=[on_task]
+        )
+        for queue, on_task in zip(self.queue_list, self.on_task_list)
+    ]
 
 
 class ClueMQ:
@@ -92,7 +90,7 @@ class ClueMQ:
         print("Terminate worker")
 
     self.close()
-  
+
   def add_queue(self, exchange, routing_key, func):
     queue_name = func.__name__
     queue = Queue(
