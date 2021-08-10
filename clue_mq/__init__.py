@@ -41,65 +41,49 @@ class ClueMQ:
     self.conn = Connection(host)
     self.exchange_name = exchange_name
     self.exchange_type = exchange_type
-    self.exchange = Exchange(
-        name=self.exchange_name,
-        type=exchange_type,
-        channel=self.conn,
-        durable=True
-    )
+    self.accept_type = accept_type
     self.queue_list = []
     self.on_task_list = []
-    self.worker = Worker(self.conn, self.queue_list, self.on_task_list, accept_type)
-
-  def connect(self):
-    self.conn.connect()
-    print("-----Mesage Queue connection connected-----")
-
-  def close(self):
-    self.conn.close()
-    print("-----Mesage Queue connection closed-----")
-
-  def setup(self):
-    self.exchange.declare()
-    print("-----declare exchange-----")
-    print(f"""
-    exchange name: {self.exchange_name},
-    exchange type: {self.exchange_type},
-    """)
+    self.worker = Worker(self.conn, self.queue_list, self.on_task_list, self.accept_type)
+    self.exchange_dict = dict()
+    self.get_exchange(self.exchange_name, self.exchange_type)
 
   def send_message(
       self,
       data: dict,
       routing_key: str,
-      serializer: str = "json"
+      serializer: str = "json",
+      exchange_name: str = None,
+      exchange_type: str = None,
   ):
-    producer = Producer(self.conn)
-    producer.publish(
+    exchange = self.get_exchange(exchange_name, exchange_type)
+    self.worker.producer.publish(
         data,
-        exchange=self.exchange,
+        exchange=exchange,
         routing_key=routing_key,
         serializer=serializer
     )
 
   def run(self):
-    self.connect()
-
     try:
-        self.worker.run()
+      self.worker.run()
     except KeyboardInterrupt:
-        print("Terminate worker")
+      print("Terminate worker")
 
-    self.close()
-
-  def add_queue(self, exchange, routing_key, func):
+  def add_queue(
+        self,
+        routing_key,
+        func,
+        exchange_name=None,
+        exchange_type=None
+    ):
     queue_name = func.__name__
+    exchange = self.get_exchange(exchange_name, exchange_type)
     queue = Queue(
         name=queue_name,
-        channel=self.conn,
-        durable=False,
-        auto_delete=False,
-        exchange=self.exchange,
-        routing_key=routing_key
+        exchange=exchange,
+        routing_key=routing_key,
+        durable=False
     )
 
     def on_task(body, message):
@@ -110,6 +94,18 @@ class ClueMQ:
         print("task raised exception: %r", exc)
       message.ack()
 
-    queue.declare()
     self.queue_list.append(queue)
     self.on_task_list.append(on_task)
+  
+  def get_exchange(self, exchange_name, exchange_type):
+    exchange_name = exchange_name or self.exchange_name
+    exchange_type = exchange_type or self.exchange_type
+    exchange = self.exchange_dict.get(exchange_name, None)
+    if not exchange:
+      exchange = Exchange(
+          name=exchange_name,
+          type=exchange_type,
+          durable=True
+      )
+      self.exchange_dict[exchange_name] = exchange
+    return exchange

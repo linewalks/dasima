@@ -1,6 +1,6 @@
+import os
 import sys
-from os import path
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+sys.path.append(os.getcwd())
 
 from clue_mq import ClueMQ
 
@@ -21,11 +21,12 @@ def mul(x, y):
 
 
 def div(x, y):
-  return x//y
+  return x // y
 
 
 if __name__ == "__main__":
-  cluemq.add_queue("clue", "clue.add", add)
-  cluemq.add_queue("clue", "clue.mul", mul)
-  cluemq.add_queue("clue", "clue.div", div)
+
+  cluemq.add_queue("clue.add", add, "clue")
+  cluemq.add_queue("clue.mul", mul, "clue")
+  cluemq.add_queue("clue.div", div, "clue")
   cluemq.run()
