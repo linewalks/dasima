@@ -45,20 +45,18 @@ class ClueMQ:
     self.queue_list = []
     self.on_task_list = []
     self.worker = Worker(self.conn, self.queue_list, self.on_task_list, self.accept_type)
+    self.exchange_dict = dict()
+    self.get_exchange(self.exchange_name, self.exchange_type)
 
   def send_message(
       self,
       data: dict,
       routing_key: str,
       serializer: str = "json",
-      exchange_name: str = None, 
-      type: str = None,
+      exchange_name: str = None,
+      exchange_type: str = None,
   ):
-    exchange = Exchange(
-        name=exchange_name or self.exchange_name,
-        type=type or self.exchange_type,
-        durable=True
-    )
+    exchange = self.get_exchange(exchange_name, exchange_type)
     self.worker.producer.publish(
         data,
         exchange=exchange,
@@ -72,16 +70,18 @@ class ClueMQ:
     except KeyboardInterrupt:
       print("Terminate worker")
 
-  def add_queue(self, routing_key, func, exchange_name=None, type=None):
+  def add_queue(
+        self,
+        routing_key,
+        func,
+        exchange_name=None,
+        exchange_type=None
+    ):
     queue_name = func.__name__
-    task_exchange = Exchange(
-        name=exchange_name or self.exchange_name,
-        type=type or self.exchange_type,
-        durable=True
-    )
+    exchange = self.get_exchange(exchange_name, exchange_type)
     queue = Queue(
         name=queue_name,
-        exchange=task_exchange,
+        exchange=exchange,
         routing_key=routing_key,
         durable=False
     )
@@ -96,3 +96,16 @@ class ClueMQ:
 
     self.queue_list.append(queue)
     self.on_task_list.append(on_task)
+  
+  def get_exchange(self, exchange_name, exchange_type):
+    exchange_name = exchange_name or self.exchange_name
+    exchange_type = exchange_type or self.exchange_type
+    exchange = self.exchange_dict.get(exchange_name, None)
+    if not exchange:
+      exchange = Exchange(
+          name=exchange_name,
+          type=exchange_type,
+          durable=True
+      )
+      self.exchange_dict[exchange_name] = exchange
+    return exchange
