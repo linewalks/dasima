@@ -1,7 +1,16 @@
+import threading
 from typing import List, Callable
 from kombu import Connection, Exchange, Producer, Queue
 from kombu.mixins import ConsumerProducerMixin
 
+from functools import update_wrapper
+
+
+def setup_decorator(func):
+  def wrapper(self, *args, **kwargs):
+    return func(self, *args, **kwargs)
+
+  return update_wrapper(wrapper, func)
 
 # The basic class ConsumerMixin would need a :attr:`connection` attribute
 # which must be a :class:`~kombu.Connection` instance,
@@ -33,7 +42,7 @@ class Worker(ConsumerProducerMixin):
 class ClueMQ:
   def __init__(
       self,
-      host: str = "localhost",
+      host: str = "localhost", # amqp://guest:guest@localhost:5672//
       exchange_name: str = "cluemq",
       exchange_type: str = "topic",
       accept_type: List[str] = ["json"]
@@ -45,7 +54,7 @@ class ClueMQ:
     self.queue_list = []
     self.on_task_list = []
     self.worker = Worker(self.conn, self.queue_list, self.on_task_list, self.accept_type)
-    self.exchange_dict = dict()
+    self.exchange_dict = {}
     self.get_exchange(self.exchange_name, self.exchange_type)
 
   def send_message(
@@ -65,15 +74,20 @@ class ClueMQ:
     )
 
   def run(self):
-    try:
-      self.worker.run()
-    except KeyboardInterrupt:
-      print("Terminate worker")
+    t = threading.Thread(target=self.worker.run)
+    t.start()
 
+  def setup_queue(self, routing_key, exchange_name=None, exchange_type=None):
+    def decorator(func):
+      self.add_queue(func, routing_key, exchange_name, exchange_type)
+      return func
+    return decorator
+  
+  @setup_decorator
   def add_queue(
         self,
-        routing_key,
         func,
+        routing_key,
         exchange_name=None,
         exchange_type=None
     ):
