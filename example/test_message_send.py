@@ -14,7 +14,7 @@ cluemq = ClueMQ(
 )
 
 
-# # serializer ex) "json", "pickle"...
+# serializer ex) "json", "pickle"...
 def test_time():
     cluemq.send_message({"x": 3, "y": 3}, routing_key="clue.add", serializer="json")
     cluemq.send_message({"x": 3, "y": 3}, routing_key="clue.mul", serializer="json")
