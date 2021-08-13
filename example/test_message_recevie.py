@@ -12,25 +12,20 @@ cluemq = ClueMQ(
     accept_type=["json", "pickle"]
 )
 
-@cluemq.setup_queue("clue.add", "clue")
+@cluemq.subscribe(routing_key="clue.add")
 def add(x, y):
   return x + y
 
-@cluemq.setup_queue("clue.mul", "clue")
+
+@cluemq.subscribe(routing_key="clue.mul")
 def mul(x, y):
   return x * y
 
 
-@cluemq.setup_queue("clue.mul", "clue")
-def mul2(x, y):
-  return x * y
-
-
+@cluemq.subscribe(routing_key="clue.div")
 def div(x, y):
   return x // y
 
 
 if __name__ == "__main__":
-  cluemq.add_queue(div, "clue.div", "clue")
-  cluemq.run()
-  
+  cluemq.run_subscribers()
