@@ -21,6 +21,5 @@ def test_time():
     cluemq.send_message({"x": 3, "y": 3}, routing_key="clue.div", serializer="json")
 
 
-
 result = timeit.timeit(test_time, number=1000)
 print(result)
