@@ -14,13 +14,15 @@ cluemq = ClueMQ(
 )
 
 
-# serializer ex) "json", "pickle"...
-def test_time():
-    cluemq.send_message({"x": 3, "y": 3}, routing_key="clue.add", serializer="json")
-    cluemq.send_message({"x": 3, "y": 3}, routing_key="clue.mul", serializer="json")
-    cluemq.send_message({"x": 3, "y": 3}, routing_key="clue.div", serializer="json")
+# # serializer ex) "json", "pickle"...
+# def test_time():
+#     cluemq.send_message({"x": 3, "y": 3}, routing_key="clue.add", serializer="json")
+#     cluemq.send_message({"x": 3, "y": 3}, routing_key="clue.mul", serializer="json")
+#     cluemq.send_message({"x": 3, "y": 3}, routing_key="clue.div", serializer="json")
 
 
 
-result = timeit.timeit(test_time, number=1000)
-print(result)
+# result = timeit.timeit(test_time, number=1000)
+# print(result)
+
+result = cluemq.send_message({"x": 3, "y": 3}, routing_key="clue.add", serializer="json")

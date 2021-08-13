@@ -1,16 +1,10 @@
 import threading
 from typing import List, Callable
-from kombu import Connection, Exchange, Producer, Queue
+from kombu import Connection, Exchange, Queue
 from kombu.mixins import ConsumerProducerMixin
 
-from functools import update_wrapper
+from clue_mq.utils import setup
 
-
-def setup_decorator(func):
-  def wrapper(self, *args, **kwargs):
-    return func(self, *args, **kwargs)
-
-  return update_wrapper(wrapper, func)
 
 # The basic class ConsumerMixin would need a :attr:`connection` attribute
 # which must be a :class:`~kombu.Connection` instance,
@@ -23,12 +17,15 @@ class Worker(ConsumerProducerMixin):
       on_task_list: List[Callable],
       accept_type: List[str],
   ):
+    print("Worker __init__")
     self.connection = connection
     self.queue_list = queue_list
     self.on_task_list = on_task_list
     self.accept_type = accept_type
 
+
   def get_consumers(self, Consumer, channel):
+    print("Worker get_consumers")
     return [
         Consumer(
             queues=[queue],
@@ -38,7 +35,7 @@ class Worker(ConsumerProducerMixin):
         for queue, on_task in zip(self.queue_list, self.on_task_list)
     ]
 
-
+# ClueMQ clas
 class ClueMQ:
   def __init__(
       self,
@@ -47,6 +44,7 @@ class ClueMQ:
       exchange_type: str = "topic",
       accept_type: List[str] = ["json"]
   ):
+    print("ClueMQ __init__")
     self.conn = Connection(host)
     self.exchange_name = exchange_name
     self.exchange_type = exchange_type
@@ -54,6 +52,7 @@ class ClueMQ:
     self.queue_list = []
     self.on_task_list = []
     self.worker = Worker(self.conn, self.queue_list, self.on_task_list, self.accept_type)
+    self.worker2 = Worker(self.conn, self.queue_list, self.on_task_list, self.accept_type)
     self.exchange_dict = {}
     self.get_exchange(self.exchange_name, self.exchange_type)
 
@@ -65,25 +64,29 @@ class ClueMQ:
       exchange_name: str = None,
       exchange_type: str = None,
   ):
+    print("ClueMQ send_message")
     exchange = self.get_exchange(exchange_name, exchange_type)
-    self.worker.producer.publish(
+    res = self.worker.producer.publish(
         data,
         exchange=exchange,
         routing_key=routing_key,
         serializer=serializer
     )
+    return res
 
   def run(self):
-    t = threading.Thread(target=self.worker.run)
-    t.start()
+    print("ClueMQ run")
+    self.worker.run()
+    # t = threading.Thread(target=self.worker.run)
+    # t.start()
 
   def setup_queue(self, routing_key, exchange_name=None, exchange_type=None):
     def decorator(func):
       self.add_queue(func, routing_key, exchange_name, exchange_type)
       return func
     return decorator
-  
-  @setup_decorator
+
+  @setup
   def add_queue(
         self,
         func,
@@ -91,6 +94,7 @@ class ClueMQ:
         exchange_name=None,
         exchange_type=None
     ):
+    print("ClueMQ add_queue")
     queue_name = func.__name__
     exchange = self.get_exchange(exchange_name, exchange_type)
     queue = Queue(
