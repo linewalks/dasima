@@ -1,5 +1,6 @@
 import threading
 from typing import List
+from kombu import Consumer
 from kombu import Connection, Exchange, Queue
 from kombu.mixins import ConsumerProducerMixin
 
@@ -24,19 +25,42 @@ class Worker(ConsumerProducerMixin):
     self.connection = connection
     self.consumer_config_list = []
     self.accept_type = accept_type
+    self.channel_list = []
 
-  def get_consumers(self, Consumer, channel):
+  # kombu의 각각에 Channel에 독립적인 threading을 적용 하기 전
+  # 사전 작업 으로 각자의 큐마다 channel을 할당
+  def get_consumers(self, _, default_channel):
+
+    self.channel_list.append(default_channel)
+    self.channel_list.extend([
+        default_channel.connection.channel()
+        for _ in range(len(self.consumer_config_list) - 1)
+    ])
+
     return [
         Consumer(
-            queues=[queue],
+            channel=channel,
+            queues=[config[0]],
             accept=self.accept_type,
-            callbacks=[on_task]
+            callbacks=[config[1]]
         )
-        for queue, on_task in self.consumer_config_list
+        for channel, config in zip(self.channel_list, self.consumer_config_list)
     ]
+
+  def on_consume_end(self, connection, default_channel):
+    for channel in self.channel_list:
+      if channel:
+        channel.close()
 
 
 class ClueMQ:
+  """
+  CLUE MQ는
+  @subscribe 데코레이터를 지정한 함수를 원하는 라우팅 키를 사용하여
+  구독을 하는 기능을 지원 합니다. 
+  또한 send_message 함수를 사용하여 지정된 라우팅 키로 원하는 데이터를
+  메세지로 보낼수 있습니다.
+  """
   def __init__(
       self,
       host: str = "localhost",
@@ -62,7 +86,7 @@ class ClueMQ:
   ):
     exchange = self.get_exchange(exchange_name, exchange_type)
     self.worker.producer.publish(
-        data,
+        body=data,
         exchange=exchange,
         routing_key=routing_key,
         serializer=serializer
