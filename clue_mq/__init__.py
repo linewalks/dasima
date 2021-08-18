@@ -1,7 +1,6 @@
 import threading
 from typing import List
-from kombu import Consumer
-from kombu import Connection, Exchange, Queue
+from kombu import Connection, Consumer, Exchange, Queue
 from kombu.mixins import ConsumerProducerMixin
 
 from clue_mq.utils import setup
@@ -28,14 +27,24 @@ class Worker(ConsumerProducerMixin):
     self.channel_list = []
 
   # kombu의 각각에 Channel에 독립적인 threading을 적용 하기 전
-  # 사전 작업 으로 각자의 큐마다 channel을 할당
+  # 사전 작업 으로 각자의 Consumer마다 channel을 할당
+  # worker.run 실행 될때만 호출이 된다. 중복으로 호출될 경우가 있을까??
   def get_consumers(self, _, default_channel):
 
-    self.channel_list.append(default_channel)
-    self.channel_list.extend([
+    # TODO get_consumers 호출 마다 새로운 Connection을 연결해 주기에
+    # 기존에 연결 되어 있는 Connection을 닫아 줘야 되지만
+    # 현재 Connection.close 시 socket.timeout: timed out 에러 발생으로 원인 조사중
+    for channel in self.channel_list:
+      if channel:
+        channel.close()
+
+    channel_list = []
+    channel_list.append(default_channel)
+    channel_list.extend([
         default_channel.connection.channel()
         for _ in range(len(self.consumer_config_list) - 1)
     ])
+    self.channel_list = channel_list
 
     return [
         Consumer(
