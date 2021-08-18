@@ -1,7 +1,8 @@
 import threading
-from typing import List
+
 from kombu import Connection, Consumer, Exchange, Queue
 from kombu.mixins import ConsumerProducerMixin
+from typing import List
 
 from clue_mq.utils import setup
 
