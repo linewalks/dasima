@@ -5,7 +5,7 @@ CLUE pub-sub을 위한 repo
 
 #### subscriber
 
-```
+```python
 from clue_mq import ClueMQ
 
 
@@ -29,11 +29,11 @@ if __name__ == "__main__":
   # 지금까지 설정된 큐와 큐의 메세지를 소비하는 Comsumer를 생성 해줌
   cluemq.run_subscribers()
 
-```python
+```
 
 
 #### Publisher
-```
+```python
 from clue_mq import ClueMQ
 
 
@@ -46,5 +46,5 @@ cluemq = ClueMQ(
 
 #cluemq.{exchange}.send_message(전송 데이터 dict type, "요청을 보낼 라우팅키")
 cluemq.clue.send_message({"x": 1, "y": 2}, "test_routing_key")
-```python
+```
 
