@@ -4,17 +4,17 @@ from clue_mq.worker import Worker
 
 class ExchangeWrapper:
   def __init__(
-    self,
-    exchange_name: str,
-    exchange_type: str,
-    worker: Worker
+      self,
+      exchange_name: str,
+      exchange_type: str,
+      worker: Worker
   ):
-      self.worker = worker
-      self.exchange = Exchange(
-          name=exchange_name,
-          type=exchange_type,
-          durable=True
-      )
+    self.worker = worker
+    self.exchange = Exchange(
+        name=exchange_name,
+        type=exchange_type,
+        durable=True
+    )
 
   def send_message(self, data, routing_key):
     self.worker.publish(
