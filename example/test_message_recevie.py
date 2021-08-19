@@ -7,24 +7,31 @@ from clue_mq import ClueMQ
 
 cluemq = ClueMQ(
     host="localhost",
-    exchange_name="clue",
-    exchange_type="topic",
-    accept_type=["json", "pickle"]
+    exchange_list=[("clue", "topic"), ("login", "topic")]
 )
 
-@cluemq.subscribe(routing_key="clue.add")
+@cluemq.clue.subscribe("add")
 def add(x, y):
+  print("ADD", x, y)
   return x + y
 
 
-@cluemq.subscribe(routing_key="clue.mul")
+@cluemq.clue.subscribe("mul")
 def mul(x, y):
+  print("MUL", x, y)
   return x * y
 
 
-@cluemq.subscribe(routing_key="clue.div")
+@cluemq.login.subscribe("div")
 def div(x, y):
+  print("DIV", x, y)
   return x // y
+
+
+@cluemq.login.subscribe("sub")
+def sub(x, y):
+  print("SUB", x, y)
+  return x - y
 
 
 if __name__ == "__main__":
