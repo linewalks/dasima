@@ -1,7 +1,7 @@
-import pytest
-import time
-import random
 import gevent
+import time
+import pytest
+import random
 
 from kombu import Queue
 

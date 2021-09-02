@@ -17,6 +17,6 @@ setup(
     ],
     setup_requires=["pytest-runner"],
     test_suite="tests",
-    tests_require=["pytest", ],
+    tests_require=["pytest", "gevent"],
     packages=find_packages(include=["clue_mq"])
 )
