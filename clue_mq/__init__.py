@@ -33,4 +33,5 @@ class ClueMQ:
 
   def run_subscribers(self):
     t = threading.Thread(target=self.worker.run)
+    t.daemon = True
     t.start()

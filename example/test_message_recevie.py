@@ -1,7 +1,3 @@
-import os
-import sys
-sys.path.append(os.getcwd())
-
 from clue_mq import ClueMQ
 
 
