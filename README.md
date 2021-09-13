@@ -1,4 +1,4 @@
-# CLUE-MQ
+# DASIMA
 
 
 ### Quick start

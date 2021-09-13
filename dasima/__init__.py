@@ -23,8 +23,8 @@ class DasimaMQ:
     )
     self.create_exchange(
       exchange_list=self.app.config.get(
-          "MESSAGE_QUEUE_EXCHANGE_SETTING"
-          ,[("dasima_test", "topic")]
+          "MESSAGE_QUEUE_EXCHANGE_SETTING",
+          [("dasima_test", "topic")]
       )
     )
 
