@@ -8,16 +8,25 @@ from clue_mq.worker import Worker
 
 
 class ClueMQ:
-  def __init__(
-      self,
-      host: str = "localhost",
-      exchange_list: List[Tuple[str, str]] = [
-          ("cluemq", "topic")
-      ],
-      accept_type: str = "json"
-  ):
-    self.worker = Worker(Connection(host), accept_type)
-    self.create_exchange(exchange_list)
+  def __init__(self, app=None):
+    self.app = app
+    if app:
+      self.init_app(app)
+  
+  def init_app(self, app):
+    self.app = app
+    self.worker = Worker(
+        connection=Connection(
+            self.app.config.get("MESSAGE_QUEUE_HOST","localhost")
+        ),
+        accept_type=self.app.config.get("MESSAGE_QUEUE_ACCEPT_TYPE", "json")
+    )
+    self.create_exchange(
+      exchange_list=self.app.config.get(
+          "MESSAGE_QUEUE_EXCHANGE_SETTING"
+          ,[("dasima_test", "topic")]
+      )
+    )
 
   def create_exchange(self, exchange_list):
     for exchange_name, exchange_type in exchange_list:
@@ -27,6 +36,7 @@ class ClueMQ:
           ExchangeWrapper(
               exchange_name,
               exchange_type,
+              self.app,
               self.worker
           )
       )

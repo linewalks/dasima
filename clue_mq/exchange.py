@@ -1,5 +1,5 @@
 from kombu import Exchange, Queue
-
+from flask import Flask
 from clue_mq.worker import Worker
 
 class ExchangeWrapper:
@@ -7,9 +7,11 @@ class ExchangeWrapper:
       self,
       exchange_name: str,
       exchange_type: str,
+      app: Flask,
       worker: Worker
   ):
     self.worker = worker
+    self.app = app
     self.exchange = Exchange(
         name=exchange_name,
         type=exchange_type,
@@ -44,7 +46,8 @@ class ExchangeWrapper:
 
     def on_task(body, message):
       try:
-        func(**body)
+        with self.app.app_context():
+          func(**body)
       finally:
         message.ack()
 
