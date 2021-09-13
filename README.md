@@ -6,7 +6,7 @@
 ### setting parameters
 ```python
 MESSAGE_QUEUE_HOST = "localhost" # your Message Queue host ex) redis://0.0.0.0, amqp://id:password@0.0.0.0:port
-MESSAGE_QUEUE_ACCEPT_TYPE = "json" # sending data type json, pikle ...
+MESSAGE_QUEUE_ACCEPT_TYPE = "json" # sending data type json, pickle ...
 MESSAGE_QUEUE_EXCHANGE_SETTING = [("dasima_test", "topic"),]
 ```
 
