@@ -1,6 +1,6 @@
 from kombu import Exchange, Queue
 from flask import Flask
-from clue_mq.worker import Worker
+from dasima.worker import Worker
 
 class ExchangeWrapper:
   def __init__(

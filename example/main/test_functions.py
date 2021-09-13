@@ -1,8 +1,8 @@
 from flask import current_app as app
-from main import cluemq
+from main import dasimamq
 
 
-@cluemq.clue.subscribe("info")
+@dasimamq.clue.subscribe("info")
 def setting_info():
   print("Dasima setting parameters")
   print("MESSAGE_QUEUE_HOST: ", app.config["MESSAGE_QUEUE_HOST"])
@@ -10,25 +10,25 @@ def setting_info():
   print("MESSAGE_QUEUE_EXCHANGE_SETTING: ", app.config["MESSAGE_QUEUE_EXCHANGE_SETTING"])
 
 
-@cluemq.clue.subscribe("add")
+@dasimamq.clue.subscribe("add")
 def add(x, y):
   print("ADD", x, y)
   return x + y
 
 
-@cluemq.clue.subscribe("mul")
+@dasimamq.clue.subscribe("mul")
 def mul(x, y):
   print("MUL", x, y)
   return x * y
 
 
-@cluemq.login.subscribe("div")
+@dasimamq.login.subscribe("div")
 def div(x, y):
   print("DIV", x, y)
   return x // y
 
 
-@cluemq.login.subscribe("sub")
+@dasimamq.login.subscribe("sub")
 def sub(x, y):
   print("SUB", x, y)
   return x - y

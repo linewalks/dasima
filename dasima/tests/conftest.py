@@ -3,8 +3,8 @@ import pytest
 
 @pytest.fixture(scope="session")
 def testmq():
-  from clue_mq import ClueMQ
-  testmq = ClueMQ(
+  from dasima import DasimaMQ
+  testmq = DasimaMQ(
       host="localhost",
       exchange_list=[("test_exchange", "topic")]
   )

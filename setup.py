@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name="clue_mq",
+    name="dasima",
     version="0.1.2",
     description="Message Queue Tools for python project",
     author="Linewalks",
@@ -18,5 +18,5 @@ setup(
     setup_requires=["pytest-runner"],
     test_suite="tests",
     tests_require=["pytest", "gevent"],
-    packages=find_packages(include=["clue_mq"])
+    packages=find_packages(include=["dasima"])
 )

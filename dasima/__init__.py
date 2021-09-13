@@ -3,11 +3,11 @@ import threading
 from kombu import Connection
 from typing import List, Tuple
 
-from clue_mq.exchange import ExchangeWrapper
-from clue_mq.worker import Worker
+from dasima.exchange import ExchangeWrapper
+from dasima.worker import Worker
 
 
-class ClueMQ:
+class DasimaMQ:
   def __init__(self, app=None):
     self.app = app
     if app:
