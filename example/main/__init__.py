@@ -1,7 +1,5 @@
 from flask import Flask
-
 import sys, os
-
 sys.path.append(os.getcwd())
 from dasima import DasimaMQ
 
