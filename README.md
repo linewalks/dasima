@@ -10,29 +10,8 @@ MESSAGE_QUEUE_ACCEPT_TYPE = "json" # sending data type json, pikle ...
 MESSAGE_QUEUE_EXCHANGE_SETTING = [("dasima_test", "topic"),]
 ```
 
-#### subscriber
+#### Subscriber
 
-```python
-from flask import Flask
-from dasima import DasimaMQ
-
-app = Flask(__name__)
-
-dasimamq = DasimaMQ()
-dasimamq.init_app(app) # 또는 DasimaMQ(app) 바로 flask app을 넣어 주어서 auto init_app 가능
-
-@app.route("/")
-def send_message():
-  #dasimamq.{exchange}.send_message(전송 데이터 dict type, "요청을 보낼 라우팅키")
-  dasimamq.dasima_test.send_message({"x": 1, "y": 2}, "test_routing_key")
-  return {"data": "send message successful"}
-
-if __name__ == "__main__":
-  app.run(port=5000)
-```
-
-
-#### Publisher
 ```python
 
 from flask import Flask
@@ -57,4 +36,27 @@ if __name__ == "__main__":
   # 지금까지 설정된 큐와 큐의 메세지를 소비하는 Comsumer를 생성 해줌
   dasimamq.run_subscribers()
   app.run(port=5050)
+```
+
+
+
+#### Publisher
+
+```python
+from flask import Flask
+from dasima import DasimaMQ
+
+app = Flask(__name__)
+
+dasimamq = DasimaMQ()
+dasimamq.init_app(app) # 또는 DasimaMQ(app) 바로 flask app을 넣어 주어서 auto init_app 가능
+
+@app.route("/")
+def send_message():
+  #dasimamq.{exchange}.send_message(전송 데이터 dict type, "요청을 보낼 라우팅키")
+  dasimamq.dasima_test.send_message({"x": 1, "y": 2}, "test_routing_key")
+  return {"data": "send message successful"}
+
+if __name__ == "__main__":
+  app.run(port=5000)
 ```
