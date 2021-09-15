@@ -1,5 +1,5 @@
 from kombu import Exchange, Queue
-from flask import Flask
+from flask.ctx import AppContext
 from dasima.worker import Worker
 
 
@@ -8,11 +8,11 @@ class ExchangeWrapper:
       self,
       exchange_name: str,
       exchange_type: str,
-      app: Flask,
+      app_ctx: AppContext,
       worker: Worker
   ):
     self.worker = worker
-    self.app = app
+    self.app_ctx = app_ctx
     self.exchange = Exchange(
         name=exchange_name,
         type=exchange_type,
@@ -47,9 +47,10 @@ class ExchangeWrapper:
 
     def on_task(body, message):
       try:
-        with self.app.app_context():
-          func(**body)
+        self.app_ctx.push()
+        func(**body)
       finally:
         message.ack()
+        self.app_ctx.pop()
 
     self.worker.add_consumer_config(queue, on_task)

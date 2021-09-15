@@ -15,7 +15,7 @@ class Dasima:
 
   def init_app(self, app):
     self.app = app
-    self.app.app_context().push()
+    self.app_ctx = self.app.app_context()
     self.worker = Worker(
         connection=Connection(
             self.app.config.get("MESSAGE_QUEUE_HOST", "localhost")
@@ -37,7 +37,7 @@ class Dasima:
           ExchangeWrapper(
               exchange_name,
               exchange_type,
-              self.app,
+              self.app_ctx,
               self.worker
           )
       )
