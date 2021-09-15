@@ -1,11 +1,13 @@
 from flask import Flask
-import sys, os
+import os
+import sys
 sys.path.append(os.getcwd())
-from dasima import DasimaMQ
+from dasima import Dasima
 
 default_cdmdir = f"{os.getcwd()}/example/main/default.cfg"
 
-dasimamq = DasimaMQ()
+dasimamq = Dasima()
+
 
 def create_app(config_filename=default_cdmdir):
   app = Flask(__name__)
@@ -23,5 +25,5 @@ def create_app(config_filename=default_cdmdir):
         div,
         sub
     )
-  
+
   return app

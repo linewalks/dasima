@@ -15,12 +15,12 @@ MESSAGE_QUEUE_EXCHANGE_SETTING = [("dasima_test", "topic"),]
 ```python
 
 from flask import Flask
-from dasima import DasimaMQ
+from dasima import Dasima
 
 app = Flask(__name__)
 
-dasimamq = DasimaMQ()
-dasimamq.init_app(app) # 또는 DasimaMQ(app) 바로 flask app을 넣어 주어서 auto init_app 가능
+dasimamq = Dasima()
+dasimamq.init_app(app) # 또는 Dasima(app) 바로 flask app을 넣어 주어서 auto init_app 가능
 
 # subscribe을 통해서 함수의 구독이 가능함
 # 구독한 함수 이름의 큐가 만들어 지며 설정한 routing key로 바인딩
@@ -44,12 +44,12 @@ if __name__ == "__main__":
 
 ```python
 from flask import Flask
-from dasima import DasimaMQ
+from dasima import Dasima
 
 app = Flask(__name__)
 
-dasimamq = DasimaMQ()
-dasimamq.init_app(app) # 또는 DasimaMQ(app) 바로 flask app을 넣어 주어서 auto init_app 가능
+dasimamq = Dasima()
+dasimamq.init_app(app) # 또는 Dasima(app) 바로 flask app을 넣어 주어서 auto init_app 가능
 
 @app.route("/")
 def send_message():

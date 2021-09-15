@@ -3,16 +3,14 @@ import time
 import pytest
 import random
 
-from kombu import Queue
-
 
 class TestMQ:
-  
+
   @pytest.fixture(scope="class")
   def test_cnt(self):
     value = {
-      "cnt": 0,
-      "load_cnt": 0
+        "cnt": 0,
+        "load_cnt": 0
     }
     yield value
 

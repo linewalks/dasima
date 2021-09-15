@@ -2,6 +2,7 @@ from kombu import Exchange, Queue
 from flask import Flask
 from dasima.worker import Worker
 
+
 class ExchangeWrapper:
   def __init__(
       self,
