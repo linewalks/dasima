@@ -5,9 +5,9 @@ from main import dasimamq
 @dasimamq.clue.subscribe("info")
 def setting_info():
   print("Dasima setting parameters")
-  print("MESSAGE_QUEUE_HOST: ", app.config["MESSAGE_QUEUE_HOST"])
-  print("MESSAGE_QUEUE_ACCEPT_TYPE: ", app.config["MESSAGE_QUEUE_ACCEPT_TYPE"])
-  print("MESSAGE_QUEUE_EXCHANGE_SETTING: ", app.config["MESSAGE_QUEUE_EXCHANGE_SETTING"])
+  print("DASIMA_CONNECTION_HOST: ", app.config["DASIMA_CONNECTION_HOST"])
+  print("DASIMA_ACCEPT_TYPE: ", app.config["DASIMA_ACCEPT_TYPE"])
+  print("DASIMA_EXCHANGE_SETTING: ", app.config["DASIMA_EXCHANGE_SETTING"])
 
 
 @dasimamq.clue.subscribe("add")

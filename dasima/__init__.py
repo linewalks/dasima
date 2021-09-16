@@ -7,25 +7,26 @@ from dasima.exchange import ExchangeWrapper
 from dasima.worker import Worker
 
 
-class DasimaMQ:
+class Dasima:
   def __init__(self, app=None):
     self.app = app
     if app:
       self.init_app(app)
-  
+
   def init_app(self, app):
     self.app = app
+    self.app_ctx = self.app.app_context()
     self.worker = Worker(
         connection=Connection(
-            self.app.config.get("MESSAGE_QUEUE_HOST","localhost")
+            self.app.config.get("DASIMA_CONNECTION_HOST", "localhost")
         ),
-        accept_type=self.app.config.get("MESSAGE_QUEUE_ACCEPT_TYPE", "json")
+        accept_type=self.app.config.get("DASIMA_ACCEPT_TYPE", "json")
     )
     self.create_exchange(
-      exchange_list=self.app.config.get(
-          "MESSAGE_QUEUE_EXCHANGE_SETTING",
-          [("dasima_test", "topic")]
-      )
+        exchange_list=self.app.config.get(
+            "DASIMA_EXCHANGE_SETTING",
+            [("dasima_test", "topic")]
+        )
     )
 
   def create_exchange(self, exchange_list):
@@ -36,7 +37,7 @@ class DasimaMQ:
           ExchangeWrapper(
               exchange_name,
               exchange_type,
-              self.app,
+              self.app_ctx,
               self.worker
           )
       )
