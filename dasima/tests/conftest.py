@@ -7,7 +7,7 @@ def testmq():
   from dasima import DasimaMQ
 
   app = Flask(__name__)
-  app.config["MESSAGE_QUEUE_EXCHANGE_SETTING"] = [("test_exchange", "topic")]
+  app.config["DASIMA_EXCHANGE_SETTING"] = [("test_exchange", "topic")]
   testmq = DasimaMQ()
   testmq.init_app(app)
 

@@ -18,13 +18,13 @@ class Dasima:
     self.app_ctx = self.app.app_context()
     self.worker = Worker(
         connection=Connection(
-            self.app.config.get("MESSAGE_QUEUE_HOST", "localhost")
+            self.app.config.get("DASIMA_CONNECTION_HOST", "localhost")
         ),
-        accept_type=self.app.config.get("MESSAGE_QUEUE_ACCEPT_TYPE", "json")
+        accept_type=self.app.config.get("DASIMA_ACCEPT_TYPE", "json")
     )
     self.create_exchange(
         exchange_list=self.app.config.get(
-            "MESSAGE_QUEUE_EXCHANGE_SETTING",
+            "DASIMA_EXCHANGE_SETTING",
             [("dasima_test", "topic")]
         )
     )
