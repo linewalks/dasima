@@ -20,10 +20,10 @@ from dasima import Dasima
 app = Flask(__name__)
 
 dasimamq = Dasima()
-dasimamq.init_app(app) # Alternatively, auto init_app is possible by putting the flask app directly into Dasima(app).
+dasimamq.init_app(app) # Alternatively, auto init_app can be used after putting the flask app into Dasima like Dasima(app).
 
-# Subscribing to a function is possible through subscribe
-# A queue with the subscribed function name is created and bound with the set routing key.
+# Be able to subscribe target functions using the function 'subscribe' 
+# The queue named by subscribed function name will be made, and binding it with routing key
 # dasimamq.{exchange}.subscribe("Route key to bind")
 @dasimamq.dasima_test.subscribe("test_routing_key")
 def test_function(x, y):
@@ -32,8 +32,9 @@ def test_function(x, y):
 
 
 if __name__ == "__main__":
-  # Create a consumer that consumes the queues and queue messages established 
-  # so far through the run_subscribers function.
+  # Create queues that were established
+  # and consumers that process the messages in queues
+  # as implement the function 'run_subscribers'
   dasimamq.run_subscribers()
   app.run(port=5050)
 ```
