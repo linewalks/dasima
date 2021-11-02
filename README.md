@@ -2,7 +2,7 @@
 
 #### Description
 
-Dasima is a library that helps sending messages and reciving in Flask project. It is a simple wrapper around Kombu and support with the Publish /Subscribe pattern of your Flask project.
+Dasima is a library that helps you send and receive messages in Flask project. It is a simple wrapper around Kombu and support with the Publish /Subscribe pattern of your Flask project.
 
 
 
