@@ -53,6 +53,12 @@ from flask import Flask
 
 
 app = Flask(__name__)
+app.config.update({
+    "DASIMA_CONNECTION_HOST": "localhost",
+    "DASIMA_ACCEPT_TYPE": "json",
+    "DASIMA_EXCHANGE_SETTING": [("test_exchange", "topic"),]
+})
+
 
 dasimamq = Dasima()
 dasimamq.init_app(app) # Alternatively, auto init_app can be used after putting the flask app into Dasima like Dasima(app).
@@ -65,6 +71,15 @@ dasimamq.init_app(app) # Alternatively, auto init_app can be used after putting 
 def test_function(x, y):
     print(x + y)
     return x + y
+
+
+# Almost the same as 'subscribe'
+# When using the same service on multiple servers, 'subscribe' is received message only one server
+# but 'multi_subscribe' is received message all servers
+@dasimamq.test_exchange.multi_subscribe("test_multi_routing_key")
+def test_multi_function(x):
+    print(x)
+    return x
 
 
 if __name__ == "__main__":
@@ -83,6 +98,11 @@ from dasima import Dasima
 
 
 app = Flask(__name__)
+app.config.update({
+    "DASIMA_CONNECTION_HOST": "localhost",
+    "DASIMA_ACCEPT_TYPE": "json",
+    "DASIMA_EXCHANGE_SETTING": [("test_exchange", "topic"),]
+})
 
 
 dasimamq = Dasima()
@@ -93,6 +113,7 @@ dasimamq.init_app(app) # Alternatively, auto init_app is possible by putting the
 def send_message():
     # dasimamq.{exchange}.subscribe("Route key to bind")
     dasimamq.test_exchange.send_message({"x": 1, "y": 2}, "test_routing_key")
+    dasimamq.test_exchange.send_message({"x": 1}, "test_multi_routing_key")
     return {"data": "send message successful"}
 
 
