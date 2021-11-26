@@ -1,6 +1,13 @@
+import random
+import string
+
 from kombu import Exchange, Queue
 from flask.ctx import AppContext
 from dasima.worker import Worker
+
+
+RANDOM_STRING = string.ascii_letters + string.digits
+LENGTH = 6
 
 
 class ExchangeWrapper:
@@ -28,21 +35,30 @@ class ExchangeWrapper:
 
   def subscribe(self, routing_key):
     def decorator(func):
-      self.add_consumer_config(func, routing_key)
+      self.add_consumer_config(func, routing_key, False)
+      return func
+    return decorator
+
+  def multi_subscribe(self, routing_key):
+    def decorator(func):
+      self.add_consumer_config(func, routing_key, True)
       return func
     return decorator
 
   def add_consumer_config(
       self,
       func,
-      routing_key
+      routing_key,
+      is_multi
   ):
-    queue_name = func.__name__
+    suffix = ''.join(random.choices(RANDOM_STRING, k=LENGTH)) if is_multi else ""
+    queue_name = func.__name__ + suffix
     queue = Queue(
         name=queue_name,
         exchange=self.exchange,
         routing_key=routing_key,
-        durable=True
+        durable=True,
+        auto_delete=is_multi
     )
 
     def on_task(body, message):
