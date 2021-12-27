@@ -7,7 +7,7 @@ import sys
 sys.path.append(os.getcwd())
 from dasima import Dasima
 
-default_cdmdir = f"{os.getcwd()}/example/main/default.cfg"
+default_cdmdir = os.path.join(os.getcwd(), "example", "main", "default.cfg")
 
 dasimamq = Dasima()
 
