@@ -14,6 +14,7 @@ class Dasima:
       self.init_app(app)
 
   def init_app(self, app):
+    print("__dasima__init__")
     self.app = app
     self.app_ctx = self.app.app_context()
     self.worker = Worker(
@@ -30,6 +31,7 @@ class Dasima:
     )
 
   def create_exchange(self, exchange_list):
+    print("__dasima__create_exchange__")
     for exchange_name, exchange_type in exchange_list:
       setattr(
           self,
@@ -43,6 +45,7 @@ class Dasima:
       )
 
   def run_subscribers(self):
+    print("__dasima__run_subscribers__")
     t = threading.Thread(target=self.worker.run)
     t.daemon = True
     t.start()

@@ -11,6 +11,7 @@ class ExchangeWrapper:
       app_ctx: AppContext,
       worker: Worker
   ):
+    print("__exchangerwrapper_init__")
     self.worker = worker
     self.app_ctx = app_ctx
     self.exchange = Exchange(
@@ -20,6 +21,7 @@ class ExchangeWrapper:
     )
 
   def send_message(self, data, routing_key):
+    print("__exchangerwrapper_send_message__")
     self.worker.publish(
         data,
         self.exchange,
@@ -27,6 +29,7 @@ class ExchangeWrapper:
     )
 
   def subscribe(self, routing_key):
+    print(f"__exchangerwrapper_subscribe_{routing_key}__")
     def decorator(func):
       self.add_consumer_config(func, routing_key)
       return func
@@ -37,6 +40,7 @@ class ExchangeWrapper:
       func,
       routing_key
   ):
+    print("__exchangerwrapper_add_consumer__")
     queue_name = func.__name__
     queue = Queue(
         name=queue_name,

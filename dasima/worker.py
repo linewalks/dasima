@@ -17,12 +17,14 @@ class Worker(ConsumerProducerMixin):
       connection: Connection,
       accept_type: str,
   ):
+    print("__worker__init__")
     self.connection = connection
     self.consumer_config_list = []
     self.accept_type = accept_type
     self.channel_list = []
 
   def close_channels(self):
+    print("__worker__close_channels__")
     for channel in self.channel_list:
       # TODO maybe_close_channel
       if channel:
@@ -31,7 +33,7 @@ class Worker(ConsumerProducerMixin):
   # kombu의 각각에 Channel에 독립적인 threading을 적용 하기 전
   # 사전 작업 으로 각자의 Consumer마다 channel을 할당
   def get_consumers(self, _, default_channel):
-
+    print("__worker_get_consumers__")
     # TODO get_consumers 호출 마다 새로운 Connection을 연결해 주기에
     # 기존에 연결 되어 있는 Connection을 닫아 줘야 되지만
     # 현재 Connection.close 시 socket.timeout: timed out 에러 발생으로 원인 조사중
@@ -56,6 +58,7 @@ class Worker(ConsumerProducerMixin):
 
   # connection으로 channel들을 불러온다.
   def on_consume_end(self, connection, default_channel):
+    print("__worker_on_consumer_end__")
     self.close_channels()
 
   def publish(self, data, exchange, routing_key):
@@ -67,4 +70,5 @@ class Worker(ConsumerProducerMixin):
     )
 
   def add_consumer_config(self, queue, on_task):
+    print("__worker_add_consumer_config__")
     self.consumer_config_list.append((queue, on_task))
