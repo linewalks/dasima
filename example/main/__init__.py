@@ -19,11 +19,11 @@ def create_app(config_filename=default_cdmdir):
 
     # subscribe funtions import
     from main.test_functions import (
-        # setting_info,
+        setting_info,
         add,
-        # mul,
-        # div,
-        # sub
+        mul,
+        div,
+        sub
     )
 
   return app
