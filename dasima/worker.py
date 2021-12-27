@@ -34,10 +34,10 @@ class Worker(ConsumerProducerMixin):
     self.__consumer_config_list.append((queue, on_task))
 
   def make_combine_function(self, func_list):
-    def func(data, route_key):
+    def func(data, routing_key):
       func_dict = dict(func_list)
-      if func_dict.get(route_key):
-        return func_dict[route_key](**data)
+      if func_dict.get(routing_key):
+        return func_dict[routing_key](**data)
     return func
 
   def add_consumer_config_list(self, exchange):

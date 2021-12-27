@@ -60,8 +60,8 @@ dasimamq.init_app(app) # Alternatively, auto init_app can be used after putting 
 
 # Be able to subscribe target functions using the function 'subscribe' 
 # The queue named by subscribed function name will be made, and binding it with routing key
-# dasimamq.{exchange}.subscribe("Route key to bind")
-@dasimamq.test_exchange.subscribe("test_routing_key")
+# dasimamq.{exchange}.subscribe(queue, routing_key) - "Queue and Route key to bind"
+@dasimamq.test_exchange.subscribe(queue="test", routing_key="test_routing_key")
 def test_function(x, y):
     print(x + y)
     return x + y
