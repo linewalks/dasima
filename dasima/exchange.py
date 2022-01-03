@@ -10,7 +10,6 @@ class ExchangeWrapper:
       exchange_type: str,
       worker: Worker
   ):
-    self.exchange_name = exchange_name
     self.exchange = Exchange(
         name=exchange_name,
         type=exchange_type,
@@ -39,7 +38,7 @@ class ExchangeWrapper:
     return decorator
 
   def add_binding_dict(self, func, routing_key):
-    key = self.exchange_name
+    key = self.exchange.name
     routing_key = func.__name__ if routing_key is None else routing_key
 
     if self.__binding_dict.get(key):
