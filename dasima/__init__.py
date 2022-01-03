@@ -18,7 +18,7 @@ class Dasima:
     self.app_ctx = self.app.app_context()
     self.exchange_list = self.app.config.get(
         "DASIMA_EXCHANGE_SETTING",
-        [("dasima_test", "topic")]
+        [("dasima_test", "one")]
     ) 
     self.worker = Worker(
         connection=Connection(self.app.config.get("DASIMA_CONNECTION_HOST", "localhost")),

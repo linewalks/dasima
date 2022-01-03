@@ -1,3 +1,5 @@
+import uuid
+
 from kombu import Exchange, Queue, binding
 from flask.ctx import AppContext
 from dasima.worker import Worker
@@ -10,9 +12,10 @@ class ExchangeWrapper:
       exchange_type: str,
       worker: Worker
   ):
+    self.exchange_type = exchange_type
     self.exchange = Exchange(
         name=exchange_name,
-        type=exchange_type,
+        type="topic",
         durable=True
     )
     self.__binding_dict = {}
@@ -38,7 +41,8 @@ class ExchangeWrapper:
     return decorator
 
   def add_binding_dict(self, func, routing_key):
-    key = self.exchange.name
+    prefix = str(uuid.uuid4()) if self.exchange_type == "all" else ""
+    key = prefix + self.exchange.name
     routing_key = func.__name__ if routing_key is None else routing_key
 
     if self.__binding_dict.get(key):

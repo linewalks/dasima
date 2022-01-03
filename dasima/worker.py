@@ -42,6 +42,7 @@ class Worker(ConsumerProducerMixin):
 
   def add_consumer_config_list(self, exchange):
     binding_dict = exchange.get_binding_dict()
+    auto_delete =True if exchange.exchange_type == "all" else False
     for queue_name, bind_list in binding_dict.items():
       func = self.make_combine_function(bind_list)
       bindings = [
@@ -63,7 +64,8 @@ class Worker(ConsumerProducerMixin):
           name=queue_name,
           exchange=exchange.exchange,
           bindings=bindings,
-          durable=True
+          durable=True,
+          auto_delete=auto_delete
       )
 
       self.add_consumer_config(queue, on_task)

@@ -38,7 +38,9 @@ $ pip install dasima
 ```python
 DASIMA_CONNECTION_HOST = "localhost" # your Message Queue host ex) redis://0.0.0.0, amqp://id:password@0.0.0.0:port
 DASIMA_ACCEPT_TYPE = "json" # sending data type ex) json, pickle ...
-DASIMA_EXCHANGE_SETTING = [("test_exchange", "topic"),]
+DASIMA_EXCHANGE_SETTING = [("test_exchange", "one"),] 
+# DASIMA_EXCHANGE_SETTING is list of tuples [(exchange name, type)]
+# There are two types: 'all' and 'one'.
 ```
 
 
