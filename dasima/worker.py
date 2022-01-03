@@ -60,10 +60,10 @@ class Worker(ConsumerProducerMixin):
           self.app_ctx.pop()
 
       queue = Queue(
-        name=queue_name,
-        exchange=exchange.exchange,
-        bindings=bindings,
-        durable=True
+          name=queue_name,
+          exchange=exchange.exchange,
+          bindings=bindings,
+          durable=True
       )
 
       self.add_consumer_config(queue, on_task)
