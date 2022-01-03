@@ -29,14 +29,19 @@ class ExchangeWrapper:
         routing_key
     )
 
-  def subscribe(self, routing_key):
+  def subscribe(self, arg=None):
+    if callable(arg):
+      self.add_binding_dict(arg, None)
+      return arg
     def decorator(func):
-      self.add_binding_dict(routing_key, func)
+      self.add_binding_dict(func, arg)
       return func
     return decorator
 
-  def add_binding_dict(self, routing_key, func):
+  def add_binding_dict(self, func, routing_key):
     key = self.exchange_name
+    routing_key = func.__name__ if routing_key is None else routing_key
+
     if self.__binding_dict.get(key):
       self.__binding_dict[key].append((routing_key, func))
     else:
