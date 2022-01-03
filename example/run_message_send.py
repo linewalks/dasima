@@ -23,7 +23,7 @@ def create_app(config_filename=default_cdmdir):
     dasimamq.clue.send_message({"x": 3, "y": 3}, "add")
     dasimamq.clue.send_message({"x": 3, "y": 3}, "mul")
     dasimamq.login.send_message({"x": 3, "y": 3}, "div")
-    dasimamq.login.send_message({"x": 3, "y": 3}, "sub")
+    dasimamq.login.send_message({"x": 3, "y": 3}, "test")
 
   @app.route("/")
   def send_message():
