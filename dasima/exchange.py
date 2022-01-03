@@ -10,6 +10,7 @@ class ExchangeWrapper:
       exchange_type: str,
       worker: Worker
   ):
+    self.exchange_name = exchange_name
     self.exchange = Exchange(
         name=exchange_name,
         type=exchange_type,
@@ -27,15 +28,16 @@ class ExchangeWrapper:
         self.exchange,
         routing_key
     )
-  
-  def subscribe(self, queue, routing_key):
+
+  def subscribe(self, routing_key):
     def decorator(func):
-      self.add_binding_dict(queue, routing_key, func)
+      self.add_binding_dict(routing_key, func)
       return func
     return decorator
-  
-  def add_binding_dict(self, queue, routing_key, func):
-    if self.__binding_dict.get(queue):
-      self.__binding_dict[queue].append((routing_key, func))
+
+  def add_binding_dict(self, routing_key, func):
+    key = self.exchange_name
+    if self.__binding_dict.get(key):
+      self.__binding_dict[key].append((routing_key, func))
     else:
-      self.__binding_dict[queue] = [(routing_key, func)]
+      self.__binding_dict[key] = [(routing_key, func)]

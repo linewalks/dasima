@@ -2,7 +2,7 @@ from flask import current_app as app
 from main import dasimamq
 
 
-@dasimamq.clue.subscribe("clue_queue", "info")
+@dasimamq.clue.subscribe("info")
 def setting_info():
   print("Dasima setting parameters")
   print("DASIMA_CONNECTION_HOST: ", app.config["DASIMA_CONNECTION_HOST"])
@@ -10,25 +10,25 @@ def setting_info():
   print("DASIMA_EXCHANGE_SETTING: ", app.config["DASIMA_EXCHANGE_SETTING"])
 
 
-@dasimamq.clue.subscribe("clue_queue", "add")
+@dasimamq.clue.subscribe("add")
 def add(x, y):
   print("ADD", x, y)
   return x + y
 
 
-@dasimamq.clue.subscribe("clue_queue", "mul")
+@dasimamq.clue.subscribe("mul")
 def mul(x, y):
   print("MUL", x, y)
   return x * y
 
 
-@dasimamq.login.subscribe("login_queue", "div")
+@dasimamq.login.subscribe("div")
 def div(x, y):
   print("DIV", x, y)
   return x // y
 
 
-@dasimamq.login.subscribe("login_queue", "sub")
+@dasimamq.login.subscribe("sub")
 def sub(x, y):
   print("SUB", x, y)
   return x - y
