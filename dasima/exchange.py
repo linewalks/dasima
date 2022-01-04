@@ -1,4 +1,6 @@
-from kombu import Exchange, Queue
+import uuid
+
+from kombu import Exchange, Queue, binding
 from flask.ctx import AppContext
 from dasima.worker import Worker
 
@@ -8,16 +10,19 @@ class ExchangeWrapper:
       self,
       exchange_name: str,
       exchange_type: str,
-      app_ctx: AppContext,
       worker: Worker
   ):
-    self.worker = worker
-    self.app_ctx = app_ctx
+    self.exchange_type = exchange_type
     self.exchange = Exchange(
         name=exchange_name,
-        type=exchange_type,
+        type="topic",
         durable=True
     )
+    self.__binding_dict = {}
+    self.worker = worker
+
+  def get_binding_dict(self):
+    return self.__binding_dict
 
   def send_message(self, data, routing_key):
     self.worker.publish(
@@ -26,31 +31,21 @@ class ExchangeWrapper:
         routing_key
     )
 
-  def subscribe(self, routing_key):
+  def subscribe(self, routing_key=None):
+    if callable(routing_key):
+      self.add_binding_dict(routing_key, None)
+      return routing_key
     def decorator(func):
-      self.add_consumer_config(func, routing_key)
+      self.add_binding_dict(func, routing_key)
       return func
     return decorator
 
-  def add_consumer_config(
-      self,
-      func,
-      routing_key
-  ):
-    queue_name = func.__name__
-    queue = Queue(
-        name=queue_name,
-        exchange=self.exchange,
-        routing_key=routing_key,
-        durable=True
-    )
+  def add_binding_dict(self, func, routing_key):
+    prefix = str(uuid.uuid4()) if self.exchange_type == "all" else ""
+    key = prefix + self.exchange.name
+    routing_key = func.__name__ if routing_key is None else routing_key
 
-    def on_task(body, message):
-      try:
-        self.app_ctx.push()
-        func(**body)
-      finally:
-        message.ack()
-        self.app_ctx.pop()
-
-    self.worker.add_consumer_config(queue, on_task)
+    if self.__binding_dict.get(key):
+      self.__binding_dict[key].append((routing_key, func))
+    else:
+      self.__binding_dict[key] = [(routing_key, func)]

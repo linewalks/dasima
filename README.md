@@ -38,7 +38,9 @@ $ pip install dasima
 ```python
 DASIMA_CONNECTION_HOST = "localhost" # your Message Queue host ex) redis://0.0.0.0, amqp://id:password@0.0.0.0:port
 DASIMA_ACCEPT_TYPE = "json" # sending data type ex) json, pickle ...
-DASIMA_EXCHANGE_SETTING = [("test_exchange", "topic"),]
+DASIMA_EXCHANGE_SETTING = [("test_exchange", "one"),] 
+# DASIMA_EXCHANGE_SETTING is list of tuples [(exchange name, type)]
+# There are two types: 'all' and 'one'.
 ```
 
 
@@ -60,8 +62,9 @@ dasimamq.init_app(app) # Alternatively, auto init_app can be used after putting 
 
 # Be able to subscribe target functions using the function 'subscribe' 
 # The queue named by subscribed function name will be made, and binding it with routing key
-# dasimamq.{exchange}.subscribe("Route key to bind")
-@dasimamq.test_exchange.subscribe("test_routing_key")
+# dasimamq.{exchange}.subscribe(routing_key) - "Route key to bind"
+@dasimamq.test_exchange.subscribe(routing_key="test_routing_key")
+# @dasimamq.test_exchange.subscribe - if routing key not defined, routing key is defined as function name
 def test_function(x, y):
     print(x + y)
     return x + y

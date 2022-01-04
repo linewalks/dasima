@@ -1,6 +1,6 @@
-from kombu import Connection, Consumer
+from flask.ctx import AppContext
+from kombu import Connection, Consumer, Queue, binding
 from kombu.mixins import ConsumerProducerMixin
-
 
 # The basic class ConsumerMixin would need a :attr:`connection` attribute
 # which must be a :class:`~kombu.Connection` instance,
@@ -16,22 +16,63 @@ class Worker(ConsumerProducerMixin):
       self,
       connection: Connection,
       accept_type: str,
+      app_ctx: AppContext
   ):
     self.connection = connection
-    self.consumer_config_list = []
     self.accept_type = accept_type
     self.channel_list = []
+    self.app_ctx = app_ctx
+    self.__consumer_config_list = []
 
   def close_channels(self):
     for channel in self.channel_list:
       # TODO maybe_close_channel
       if channel:
         channel.close()
+  
+  def add_consumer_config(self, queue, on_task):
+    self.__consumer_config_list.append((queue, on_task))
+
+  def make_combine_function(self, func_list):
+    def func(data, routing_key):
+      func_dict = dict(func_list)
+      if func_dict.get(routing_key):
+        return func_dict[routing_key](**data)
+    return func
+
+  def add_consumer_config_list(self, exchange):
+    binding_dict = exchange.get_binding_dict()
+    auto_delete =True if exchange.exchange_type == "all" else False
+    for queue_name, bind_list in binding_dict.items():
+      func = self.make_combine_function(bind_list)
+      bindings = [
+          binding(exchange.exchange, routing_key=routing_key)
+          for routing_key, _ in bind_list
+      ]
+
+      def on_task(body, message):
+        routing_key = message.delivery_info["routing_key"]
+        try:
+          if func is not None:
+            self.app_ctx.push()
+            func(body, routing_key)
+        finally:
+          message.ack()
+          self.app_ctx.pop()
+
+      queue = Queue(
+          name=queue_name,
+          exchange=exchange.exchange,
+          bindings=bindings,
+          durable=True,
+          auto_delete=auto_delete
+      )
+
+      self.add_consumer_config(queue, on_task)
 
   # kombu의 각각에 Channel에 독립적인 threading을 적용 하기 전
   # 사전 작업 으로 각자의 Consumer마다 channel을 할당
   def get_consumers(self, _, default_channel):
-
     # TODO get_consumers 호출 마다 새로운 Connection을 연결해 주기에
     # 기존에 연결 되어 있는 Connection을 닫아 줘야 되지만
     # 현재 Connection.close 시 socket.timeout: timed out 에러 발생으로 원인 조사중
@@ -40,7 +81,7 @@ class Worker(ConsumerProducerMixin):
     channel_list = [default_channel]
     channel_list.extend([
         default_channel.connection.channel()
-        for _ in range(len(self.consumer_config_list) - 1)
+        for _ in range(len(self.__consumer_config_list) - 1)
     ])
     self.channel_list = channel_list
 
@@ -51,7 +92,7 @@ class Worker(ConsumerProducerMixin):
             accept=[self.accept_type],
             callbacks=[on_task]
         )
-        for channel, (queue, on_task) in zip(self.channel_list, self.consumer_config_list)
+        for channel, (queue, on_task) in zip(self.channel_list, self.__consumer_config_list)
     ]
 
   # connection으로 channel들을 불러온다.
@@ -65,6 +106,3 @@ class Worker(ConsumerProducerMixin):
         routing_key=routing_key,
         serializer=self.accept_type
     )
-
-  def add_consumer_config(self, queue, on_task):
-    self.consumer_config_list.append((queue, on_task))

@@ -5,6 +5,17 @@ import random
 
 
 class TestMQ:
+  @pytest.fixture(scope="class")
+  def testmq(self):
+    from flask import Flask
+    from dasima import Dasima
+
+    app = Flask(__name__)
+    app.config["DASIMA_EXCHANGE_SETTING"] = [("test_exchange", "topic")]
+    testmq = Dasima()
+    testmq.init_app(app)
+
+    return testmq
 
   @pytest.fixture(scope="class")
   def test_cnt(self):
@@ -28,12 +39,12 @@ class TestMQ:
     testmq.run_subscribers()
 
   def test_message_send_and_recevie(self, testmq, test_cnt):
-    number = random.randint(1, 10000)
+    number = random.randint(1, 1000)
     for i in range(number):
       testmq.test_exchange.send_message({"x": 3, "y": 3}, "test")
 
     # Wait for received message to be processed
-    time.sleep(number * 0.001)
+    time.sleep(number * 0.01)
     assert number == test_cnt["cnt"]
 
   def test_multi_heavy_load(self, testmq, test_cnt):
@@ -41,9 +52,9 @@ class TestMQ:
       for _ in range(100):
         testmq.test_exchange.send_message({"x": 3, "y": 3}, "load")
 
-    gevent.joinall([gevent.spawn(send) for _ in range(1000)])
+    gevent.joinall([gevent.spawn(send) for _ in range(100)])
 
     # Wait for received message to be processed
     time.sleep(10)
 
-    assert test_cnt["load_cnt"] == 1000 * 100
+    assert test_cnt["load_cnt"] == 100 * 100
