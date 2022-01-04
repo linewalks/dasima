@@ -31,12 +31,12 @@ class ExchangeWrapper:
         routing_key
     )
 
-  def subscribe(self, arg=None):
-    if callable(arg):
-      self.add_binding_dict(arg, None)
-      return arg
+  def subscribe(self, routing_key=None):
+    if callable(routing_key):
+      self.add_binding_dict(routing_key, None)
+      return routing_key
     def decorator(func):
-      self.add_binding_dict(func, arg)
+      self.add_binding_dict(func, routing_key)
       return func
     return decorator
 

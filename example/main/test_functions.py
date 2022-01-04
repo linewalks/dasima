@@ -28,7 +28,7 @@ def div(x, y):
   return x // y
 
 # 설정된 key(test)로 바인딩
-@dasimamq.login.subscribe("test")
+@dasimamq.login.subscribe(routing_key="test")
 def sub(x, y):
   print("SUB", x, y)
   return x - y
