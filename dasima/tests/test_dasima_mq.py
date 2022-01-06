@@ -1,4 +1,3 @@
-import gevent
 import time
 import pytest
 import random
@@ -6,55 +5,46 @@ import random
 
 class TestMQ:
   @pytest.fixture(scope="class")
-  def testmq(self):
-    from flask import Flask
-    from dasima import Dasima
-
-    app = Flask(__name__)
-    app.config["DASIMA_EXCHANGE_SETTING"] = [("test_exchange", "topic")]
-    testmq = Dasima()
-    testmq.init_app(app)
-
-    return testmq
-
-  @pytest.fixture(scope="class")
   def test_cnt(self):
     value = {
-        "cnt": 0,
-        "load_cnt": 0
+        "one_cnt_1": 0,
+        "one_cnt_2": 0,
+        "all_cnt_1": 0,
+        "all_cnt_2": 0
     }
     yield value
 
-  def test_subscribe(self, testmq, test_cnt):
-    @testmq.test_exchange.subscribe("test")
-    def test_func(x, y):
-      test_cnt["cnt"] += 1
-      return x + y
+  def test_subscribe(self, subscriber_1, subscriber_2, test_cnt):
+    @subscriber_1.test_type_one.subscribe("one")
+    def test_one_func1():
+      test_cnt["one_cnt_1"] += 1
+      return
 
-    @testmq.test_exchange.subscribe("load")
-    def test_load_func(x, y):
-      test_cnt["load_cnt"] += 1
-      return x + y
+    @subscriber_2.test_type_one.subscribe("one")
+    def test_one_func2():
+      test_cnt["one_cnt_2"] += 1
+      return
 
-    testmq.run_subscribers()
+    @subscriber_1.test_type_all.subscribe("all")
+    def test_all_func1():
+      test_cnt["all_cnt_1"] += 1
+      return
 
-  def test_message_send_and_recevie(self, testmq, test_cnt):
-    number = random.randint(1, 1000)
+    @subscriber_2.test_type_all.subscribe("all")
+    def test_all_func2():
+      test_cnt["all_cnt_2"] += 1
+      return
+
+    subscriber_1.run_subscribers()
+    subscriber_2.run_subscribers()
+
+  def test_message_send_and_recevie(self, publisher, test_cnt):
+    number = random.randint(1, 100)
     for i in range(number):
-      testmq.test_exchange.send_message({"x": 3, "y": 3}, "test")
+      publisher.test_type_one.send_message({}, "one")
 
     # Wait for received message to be processed
     time.sleep(number * 0.01)
-    assert number == test_cnt["cnt"]
-
-  def test_multi_heavy_load(self, testmq, test_cnt):
-    def send():
-      for _ in range(100):
-        testmq.test_exchange.send_message({"x": 3, "y": 3}, "load")
-
-    gevent.joinall([gevent.spawn(send) for _ in range(100)])
-
-    # Wait for received message to be processed
-    time.sleep(10)
-
-    assert test_cnt["load_cnt"] == 100 * 100
+    print(number)
+    print(test_cnt["one_cnt_1"])
+    print(test_cnt["one_cnt_2"])

@@ -29,7 +29,7 @@ class Worker(ConsumerProducerMixin):
       # TODO maybe_close_channel
       if channel:
         channel.close()
-  
+
   def add_consumer_config(self, queue, on_task):
     self.__consumer_config_list.append((queue, on_task))
 
@@ -42,7 +42,7 @@ class Worker(ConsumerProducerMixin):
 
   def add_consumer_config_list(self, exchange):
     binding_dict = exchange.get_binding_dict()
-    auto_delete =True if exchange.exchange_type == "all" else False
+    auto_delete = True if exchange.exchange_type == "all" else False
     for queue_name, bind_list in binding_dict.items():
       func = self.make_combine_function(bind_list)
       bindings = [

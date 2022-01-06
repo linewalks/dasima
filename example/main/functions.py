@@ -21,7 +21,7 @@ def mul(x, y):
   print("MUL", x, y)
   return x * y
 
-# () 없을 때도 위와 같은 함수 이름 div로 바인딩
+# () 없을 때도 위와 같이 함수 이름 div로 바인딩
 @dasimamq.login.subscribe
 def div(x, y):
   print("DIV", x, y)

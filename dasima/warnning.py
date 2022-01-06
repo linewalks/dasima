@@ -1,0 +1,2 @@
+class DasimaWarning(UserWarning):
+  pass

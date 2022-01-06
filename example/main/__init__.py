@@ -18,7 +18,7 @@ def create_app(config_filename=default_cdmdir):
   with app.app_context():
 
     # subscribe funtions import
-    from main.test_functions import (
+    from main.functions import (
         setting_info,
         add,
         mul,

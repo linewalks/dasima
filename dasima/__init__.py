@@ -1,10 +1,11 @@
 import threading
+import warnings
 
 from kombu import Connection
-from typing import List, Tuple
 
 from dasima.exchange import ExchangeWrapper
 from dasima.worker import Worker
+from dasima.warnning import DasimaWarning
 
 
 class Dasima:
@@ -26,6 +27,7 @@ class Dasima:
         app_ctx=self.app_ctx
     )
     self.create_exchange()
+    self.is_running = False
 
   def create_exchange(self):
     for exchange_name, exchange_type in self.exchange_list:
@@ -48,7 +50,11 @@ class Dasima:
       self.worker.add_consumer_config_list(exchange)
 
   def run_subscribers(self):
-    self.setup_queue()
-    t = threading.Thread(target=self.worker.run)
-    t.daemon = True
-    t.start()
+    if self.is_running:
+      warnings.warn("run_subscribers is aleady running!", DasimaWarning)
+    else:
+      self.is_running = True
+      self.setup_queue()
+      t = threading.Thread(target=self.worker.run)
+      t.daemon = True
+      t.start()
