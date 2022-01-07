@@ -17,7 +17,7 @@ def subscriber_2():
   app = Flask(__name__)
   app.config["DASIMA_EXCHANGE_SETTING"] = [("test_type_one", "one"), ("test_type_all", "all")]
   subscriber_2 = Dasima()
-  subscriber_2.__init__(app)
+  subscriber_2.init_app(app)
   return subscriber_2
 
 
@@ -26,6 +26,5 @@ def publisher():
   from flask import Flask
   app = Flask(__name__)
   app.config["DASIMA_EXCHANGE_SETTING"] = [("test_type_one", "one"), ("test_type_all", "all")]
-  publisher = Dasima()
-  publisher.__init__(app)
+  publisher = Dasima(app)
   return publisher
