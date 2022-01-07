@@ -22,7 +22,7 @@ class Dasima:
         [("dasima_test", "one")]
     )
     self.connection = Connection(self.app.config.get("DASIMA_CONNECTION_HOST", "localhost"))
-    self.check_connection()
+    self.connection.ensure_connection(max_retries=3)
     self.worker = Worker(
         connection=self.connection,
         accept_type=self.app.config.get("DASIMA_ACCEPT_TYPE", "json"),
@@ -30,9 +30,6 @@ class Dasima:
     )
     self.create_exchange()
     self.is_running = False
-
-  def check_connection(self, max_retries=1):
-    self.connection.ensure_connection(max_retries=max_retries)
 
   def create_exchange(self):
     for exchange_name, exchange_type in self.exchange_list:
