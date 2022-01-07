@@ -26,7 +26,7 @@ class TestMQ:
 
     # when there is not routing key, routing key is set automatically function name
     @subscriber_1.test_type_all.subscribe
-    @subscriber_1.test_type_all.subscribe
+    @subscriber_2.test_type_all.subscribe
     def test_all_func():
       test_cnt["all_cnt"] += 1
       return
