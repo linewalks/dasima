@@ -18,6 +18,6 @@ setup(
     ],
     setup_requires=["pytest-runner"],
     test_suite="tests",
-    tests_require=["pytest", "gevent"],
+    tests_require=["pytest"],
     packages=find_packages(include=["dasima"])
 )

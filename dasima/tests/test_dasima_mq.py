@@ -1,5 +1,5 @@
-import time
 import pytest
+import time
 import random
 
 
@@ -9,8 +9,7 @@ class TestMQ:
     value = {
         "one_cnt_1": 0,
         "one_cnt_2": 0,
-        "all_cnt_1": 0,
-        "all_cnt_2": 0
+        "all_cnt": 0
     }
     yield value
 
@@ -25,23 +24,24 @@ class TestMQ:
       test_cnt["one_cnt_2"] += 1
       return
 
-    @subscriber_1.test_type_all.subscribe("all")
-    @subscriber_2.test_type_all.subscribe("all")
+    # when there is not routing key, routing key is set automatically function name
+    @subscriber_1.test_type_all.subscribe
+    @subscriber_1.test_type_all.subscribe
     def test_all_func():
-      test_cnt["all_cnt_1"] += 1
+      test_cnt["all_cnt"] += 1
       return
 
     subscriber_1.run_subscribers()
     subscriber_2.run_subscribers()
 
-    number = random.randint(1, 100)
+    number = random.randint(1, 100) * 2
     for i in range(number):
       publisher.test_type_one.send_message({}, "one")
-      publisher.test_type_all.send_message({}, "all")
+      publisher.test_type_all.send_message({}, "test_all_func")
 
     # Wait for received message to be processed
     time.sleep(number * 0.01)
-    print(number)
-    print(test_cnt["one_cnt_1"])
-    print(test_cnt["one_cnt_2"])
-    print(test_cnt["all_cnt_1"])
+
+    assert test_cnt["one_cnt_1"] == number // 2
+    assert test_cnt["one_cnt_2"] == number // 2
+    assert test_cnt["all_cnt"] == number * 2
