@@ -1,8 +1,8 @@
 import pytest
-import random
 import time
 
 from dasima import Dasima
+from dasima.warnning import DasimaWarning
 from flask import Flask
 
 
@@ -22,6 +22,13 @@ class TestMQ:
     dasmia_2 = Dasima()
     dasmia_2.init_app(app)
     assert dasmia_1.app == dasmia_2.app
+
+  def test_run_subscribers_warning(self):
+    app = Flask("test")
+    dasmia = Dasima(app)
+    dasmia.run_subscribers()
+    with pytest.warns(DasimaWarning):
+        dasmia.run_subscribers()
 
   def test_subscribe(self, subscriber_1, subscriber_2, count):
     @subscriber_1.test_type_one.subscribe("one")
