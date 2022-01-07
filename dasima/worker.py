@@ -23,12 +23,16 @@ class Worker(ConsumerProducerMixin):
     self.channel_list = []
     self.app_ctx = app_ctx
     self.__consumer_config_list = []
+    self.is_ready = False
 
   def close_channels(self):
     for channel in self.channel_list:
       # TODO maybe_close_channel
       if channel:
         channel.close()
+
+  def on_consume_ready(self, connection, channel, consumers, **kwargs):
+    self.is_ready = True
 
   def add_consumer_config(self, queue, on_task):
     self.__consumer_config_list.append((queue, on_task))

@@ -20,14 +20,19 @@ class Dasima:
     self.exchange_list = self.app.config.get(
         "DASIMA_EXCHANGE_SETTING",
         [("dasima_test", "one")]
-    ) 
+    )
+    self.connection = Connection(self.app.config.get("DASIMA_CONNECTION_HOST", "localhost"))
+    self.check_connection()
     self.worker = Worker(
-        connection=Connection(self.app.config.get("DASIMA_CONNECTION_HOST", "localhost")),
+        connection=self.connection,
         accept_type=self.app.config.get("DASIMA_ACCEPT_TYPE", "json"),
         app_ctx=self.app_ctx
     )
     self.create_exchange()
     self.is_running = False
+
+  def check_connection(self, max_retries=1):
+    self.connection.ensure_connection(max_retries=max_retries)
 
   def create_exchange(self):
     for exchange_name, exchange_type in self.exchange_list:
@@ -58,3 +63,8 @@ class Dasima:
       t = threading.Thread(target=self.worker.run)
       t.daemon = True
       t.start()
+
+      # worker가 준비가 될때 까지 잠시 기다려줌
+      while True:
+        if self.worker.is_ready:
+          break
