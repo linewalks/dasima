@@ -2,7 +2,7 @@ import pytest
 import time
 
 from dasima import Dasima
-from dasima.warnning import DasimaWarning
+from dasima.error import DasimaAlreadyRunError
 from flask import Flask
 
 
@@ -27,8 +27,8 @@ class TestMQ:
     app = Flask("test")
     dasmia = Dasima(app)
     dasmia.run_subscribers()
-    with pytest.warns(DasimaWarning):
-        dasmia.run_subscribers()
+    with pytest.raises(DasimaAlreadyRunError):
+      dasmia.run_subscribers()
 
   def test_subscribe(self, subscriber_1, subscriber_2, count):
     @subscriber_1.test_type_one.subscribe("one")
@@ -41,7 +41,6 @@ class TestMQ:
       count["one_cnt_2"] += 1
       return
 
-    # when there is not routing key, routing key is set automatically function name
     @subscriber_1.test_type_all.subscribe
     @subscriber_2.test_type_all.subscribe
     def test_all_func():

@@ -1,0 +1,2 @@
+class DasimaAlreadyRunError(Exception):
+  pass

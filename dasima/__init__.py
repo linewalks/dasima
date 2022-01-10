@@ -5,7 +5,7 @@ from kombu import Connection
 
 from dasima.exchange import ExchangeWrapper
 from dasima.worker import Worker
-from dasima.warnning import DasimaWarning
+from dasima.error import DasimaAlreadyRunError
 
 
 class Dasima:
@@ -53,7 +53,7 @@ class Dasima:
 
   def run_subscribers(self):
     if self.is_running:
-      warnings.warn("run_subscribers is aleady running!", DasimaWarning)
+      raise DasimaAlreadyRunError("run_subscribers is aleady running!")
     else:
       self.is_running = True
       self.setup_queue()
