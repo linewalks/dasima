@@ -60,8 +60,10 @@ class Dasima:
       t = threading.Thread(target=self.worker.run)
       t.daemon = True
       t.start()
-
       # worker가 준비가 될때 까지 잠시 기다려줌
       while True:
         if self.worker.is_ready:
           break
+
+  def stop_subscribers(self):
+    self.worker.stop()

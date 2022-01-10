@@ -1,3 +1,5 @@
+import time
+
 from flask.ctx import AppContext
 from kombu import Connection, Consumer, Queue, binding
 from kombu.mixins import ConsumerProducerMixin
@@ -102,6 +104,11 @@ class Worker(ConsumerProducerMixin):
   # connection으로 channel들을 불러온다.
   def on_consume_end(self, connection, default_channel):
     self.close_channels()
+
+  def stop(self):
+    self.should_stop = True
+    self.connection.release()
+    time.sleep(0.5)
 
   def publish(self, data, exchange, routing_key):
     self.producer.publish(
