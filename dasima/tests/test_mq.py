@@ -5,7 +5,7 @@ from collections import Counter
 from dasima import Dasima
 
 
-class TestDasimaSetup:
+class TestSetup:
   def test_init_app(self, flask_app):
     dasmia1 = Dasima(flask_app)
     dasmia2 = Dasima()
@@ -20,7 +20,7 @@ class TestDasimaSetup:
       assert exchange.exchange.name == exchange_name
 
 
-class TestDasimaSubscribe:
+class TestSubscribe:
   @pytest.fixture(scope="function")
   def dasima(self, flask_app):
     return Dasima(flask_app)
@@ -49,41 +49,37 @@ class TestDasimaSubscribe:
       dasima.run_subscribers()
 
 
-class TestDasimaMessageSendReceive:
+class TestMessageSendReceive:
   @pytest.fixture(scope="function")
-  def count_list(self):
-    yield []
-
-  @pytest.fixture(scope="function")
-  def dasima1(self, flask_app):
+  def sub1(self, flask_app):
     return Dasima(flask_app)
 
   @pytest.fixture(scope="function")
-  def dasima2(self, flask_app):
+  def sub2(self, flask_app):
     return Dasima(flask_app)
 
   @pytest.fixture(scope="function")
-  def publisher(self, flask_app):
+  def pub(self, flask_app):
     return Dasima(flask_app)
 
   @pytest.mark.parametrize("number", [2, 10, 100])
-  def test_exchange_type_one_recive(self, dasima1, dasima2, publisher, number, count_list):
-
-    @dasima1.exchange_type_one.subscribe("one")
+  def test_exchange_type_one_recive(self, sub1, sub2, pub, number):
+    count_list = []
+    @sub1.exchange_type_one.subscribe("one")
     def test_subscribe_function_1():
       count_list.append(1)
       return
 
-    @dasima2.exchange_type_one.subscribe("one")
+    @sub2.exchange_type_one.subscribe("one")
     def test_subscribe_function_2():
       count_list.append(2)
       return
 
-    dasima1.run_subscribers()
-    dasima2.run_subscribers()
+    sub1.run_subscribers()
+    sub2.run_subscribers()
 
     for _ in range(number):
-      publisher.exchange_type_one.send_message({}, "one")
+      pub.exchange_type_one.send_message({}, "one")
 
     # Wait for received message to be processed
     time.sleep(number * 0.01)
@@ -93,27 +89,28 @@ class TestDasimaMessageSendReceive:
     assert counter[1] == number // 2
     assert counter[2] == number // 2
 
-    dasima1.stop_subscribers()
-    dasima2.stop_subscribers()
+    sub1.stop_subscribers()
+    sub2.stop_subscribers()
 
   @pytest.mark.parametrize("number", [2, 10, 100])
-  def test_exchange_type_all_recive(self, dasima1, dasima2, publisher, number, count_list):
+  def test_exchange_type_all_recive(self, sub1, sub2, pub, number):
+    count_list = []
 
-    @dasima1.exchange_type_all.subscribe("all")
+    @sub1.exchange_type_all.subscribe("all")
     def test_subscribe_function_1():
       count_list.append(1)
       return
 
-    @dasima2.exchange_type_all.subscribe("all")
+    @sub2.exchange_type_all.subscribe("all")
     def test_subscribe_function_2():
       count_list.append(2)
       return
 
-    dasima1.run_subscribers()
-    dasima2.run_subscribers()
+    sub1.run_subscribers()
+    sub2.run_subscribers()
 
     for _ in range(number):
-      publisher.exchange_type_all.send_message({}, "all")
+      pub.exchange_type_all.send_message({}, "all")
 
     # Wait for received message to be processed
     time.sleep(number * 0.01)
@@ -123,5 +120,5 @@ class TestDasimaMessageSendReceive:
     assert counter[1] == number
     assert counter[2] == number
 
-    dasima1.stop_subscribers()
-    dasima2.stop_subscribers()
+    sub1.stop_subscribers()
+    sub2.stop_subscribers()
