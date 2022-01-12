@@ -65,6 +65,7 @@ class TestMessageSendReceive:
   @pytest.mark.parametrize("number", [2, 10, 100])
   def test_exchange_type_one_recive(self, sub1, sub2, pub, number):
     count_list = []
+
     @sub1.exchange_type_one.subscribe("one")
     def test_subscribe_function_1():
       count_list.append(1)
