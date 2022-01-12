@@ -35,9 +35,11 @@ class ExchangeWrapper:
     if callable(routing_key):
       self.add_binding_dict(routing_key, None)
       return routing_key
+
     def decorator(func):
       self.add_binding_dict(func, routing_key)
       return func
+
     return decorator
 
   def add_binding_dict(self, func, routing_key):

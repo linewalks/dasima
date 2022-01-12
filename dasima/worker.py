@@ -1,3 +1,5 @@
+import time
+
 from flask.ctx import AppContext
 from kombu import Connection, Consumer, Queue, binding
 from kombu.mixins import ConsumerProducerMixin
@@ -23,13 +25,17 @@ class Worker(ConsumerProducerMixin):
     self.channel_list = []
     self.app_ctx = app_ctx
     self.__consumer_config_list = []
+    self.is_ready = False
 
   def close_channels(self):
     for channel in self.channel_list:
       # TODO maybe_close_channel
       if channel:
         channel.close()
-  
+
+  def on_consume_ready(self, connection, channel, consumers, **kwargs):
+    self.is_ready = True
+
   def add_consumer_config(self, queue, on_task):
     self.__consumer_config_list.append((queue, on_task))
 
@@ -42,7 +48,7 @@ class Worker(ConsumerProducerMixin):
 
   def add_consumer_config_list(self, exchange):
     binding_dict = exchange.get_binding_dict()
-    auto_delete =True if exchange.exchange_type == "all" else False
+    auto_delete = True if exchange.exchange_type == "all" else False
     for queue_name, bind_list in binding_dict.items():
       func = self.make_combine_function(bind_list)
       bindings = [
@@ -98,6 +104,11 @@ class Worker(ConsumerProducerMixin):
   # connection으로 channel들을 불러온다.
   def on_consume_end(self, connection, default_channel):
     self.close_channels()
+
+  def stop(self):
+    self.should_stop = True
+    self.connection.release()
+    time.sleep(0.5)
 
   def publish(self, data, exchange, routing_key):
     self.producer.publish(
