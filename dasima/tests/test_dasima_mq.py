@@ -3,7 +3,6 @@ import time
 
 from collections import Counter
 from dasima import Dasima
-from dasima.error import DasimaAlreadyRunError
 
 
 class TestDasimaSetup:
@@ -46,7 +45,7 @@ class TestDasimaSubscribe:
 
   def test_run_subscribers_error(self, dasima):
     dasima.run_subscribers()
-    with pytest.raises(DasimaAlreadyRunError):
+    with pytest.raises(RuntimeError):
       dasima.run_subscribers()
 
 

@@ -1,11 +1,9 @@
 import threading
-import warnings
 
 from kombu import Connection
 
 from dasima.exchange import ExchangeWrapper
 from dasima.worker import Worker
-from dasima.error import DasimaAlreadyRunError
 
 
 class Dasima:
@@ -53,7 +51,7 @@ class Dasima:
 
   def run_subscribers(self):
     if self.is_running:
-      raise DasimaAlreadyRunError("run_subscribers is aleady running!")
+      raise RuntimeError("run_subscribers is aleady running!")
     else:
       self.is_running = True
       self.setup_queue()
