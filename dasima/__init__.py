@@ -1,4 +1,5 @@
 import threading
+import time
 
 from kombu import Connection
 
@@ -62,6 +63,7 @@ class Dasima:
       while True:
         if self.worker.is_ready:
           break
+        time.sleep(0.01)
 
   def stop_subscribers(self):
     self.worker.stop()
