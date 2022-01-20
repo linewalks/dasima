@@ -1,5 +1,5 @@
-import threading
 import time
+import threading
 
 from kombu import Connection
 
