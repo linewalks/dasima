@@ -7,7 +7,7 @@ setup(
     description="Message Queue Tools for flask project",
     author="Linewalks",
     author_email="jindex2411@linewalks.com",
-    url="https://github.com/linewalks/CLUE-MQ",
+    url="https://github.com/linewalks/dasima",
     license="Linewalks",
     python_requires=">=3.6",
     long_description=open("README.md").read(),
