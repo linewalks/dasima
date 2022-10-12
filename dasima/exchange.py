@@ -1,17 +1,20 @@
 import uuid
 
-from kombu import Exchange, Queue, binding
-from flask.ctx import AppContext
+from kombu import Exchange
+from flask.app import Flask
 from dasima.worker import Worker
+from dasima.rpc_client import RpcClient
 
 
 class ExchangeWrapper:
   def __init__(
       self,
+      app: Flask,
       exchange_name: str,
       exchange_type: str,
       worker: Worker
   ):
+    self.app = app
     self.exchange_type = exchange_type
     self.exchange = Exchange(
         name=exchange_name,
@@ -30,6 +33,9 @@ class ExchangeWrapper:
         self.exchange,
         routing_key
     )
+
+  def send_message_and_recevie_result(self, data, routing_key):
+    return RpcClient(self.app).call(data, routing_key, self.exchange)
 
   def subscribe(self, routing_key=None):
     if callable(routing_key):

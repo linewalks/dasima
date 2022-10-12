@@ -1,5 +1,6 @@
 import pytest
 import time
+import random
 
 from collections import Counter
 from dasima import Dasima
@@ -123,3 +124,21 @@ class TestMessageSendReceive:
 
     sub1.stop_subscribers()
     sub2.stop_subscribers()
+
+  def test_send_message_and_recevie_result(self, sub1, pub):
+
+    @sub1.exchange_type_one.subscribe("linear")
+    def test_linear_function(x):
+      y = x
+      return y
+
+    sub1.run_subscribers()
+
+    random_input = random.randint(0, 10000)
+    output = pub.exchange_type_one.send_message_and_recevie_result(
+        {"x": random_input},
+        "linear"
+    )
+    assert random_input == output
+
+    sub1.stop_subscribers()

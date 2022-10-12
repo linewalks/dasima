@@ -4,6 +4,7 @@ from flask.ctx import AppContext
 from kombu import Connection, Consumer, Queue, binding
 from kombu.mixins import ConsumerProducerMixin
 
+
 # The basic class ConsumerMixin would need a :attr:`connection` attribute
 # which must be a :class:`~kombu.Connection` instance,
 # and define a :meth:`get_consumers` method that returns a list of :class:`kombu.Consumer` instances to use.
@@ -58,13 +59,20 @@ class Worker(ConsumerProducerMixin):
 
       def on_task(body, message):
         routing_key = message.delivery_info["routing_key"]
-        try:
-          if func is not None:
-            self.app_ctx.push()
-            func(body, routing_key)
-        finally:
-          message.ack()
-          self.app_ctx.pop()
+        with self.app_ctx:
+          try:
+            if func is not None:
+              result = func(body, routing_key)
+              if message.properties.get("reply_to"):
+                self.producer.publish(
+                    {"result": result},
+                    routing_key=message.properties["reply_to"],
+                    correlation_id=message.properties["correlation_id"],
+                    serializer="json",
+                    retry=True,
+                )
+          finally:
+            message.ack()
 
       queue = Queue(
           name=queue_name,

@@ -55,6 +55,11 @@ from flask import Flask
 
 
 app = Flask(__name__)
+app.config.update({
+    "DASIMA_CONNECTION_HOST": "pyamqp://localhost:5672",
+    "DASIMA_ACCEPT_TYPE": "json",
+    "DASIMA_EXCHANGE_SETTING": [("test_exchange", "one"), ]
+})
 
 dasimamq = Dasima()
 dasimamq.init_app(app) # Alternatively, auto init_app can be used after putting the flask app into Dasima like Dasima(app).
@@ -86,17 +91,32 @@ from dasima import Dasima
 
 
 app = Flask(__name__)
-
+app.config.update({
+    "DASIMA_CONNECTION_HOST": "pyamqp://localhost:5672",
+    "DASIMA_ACCEPT_TYPE": "json",
+    "DASIMA_EXCHANGE_SETTING": [("test_exchange", "one"), ]
+})
 
 dasimamq = Dasima()
 dasimamq.init_app(app) # Alternatively, auto init_app is possible by putting the flask app directly into Dasima(app).
 
 
-@app.route("/")
+@app.route("/send")
 def send_message():
-    # dasimamq.{exchange}.subscribe("Route key to bind")
-    dasimamq.test_exchange.send_message({"x": 1, "y": 2}, "test_routing_key")
+    dasimamq.test_exchange.send_message(
+        data={"x": 1, "y": 2},
+        routing_key="test_routing_key"
+    )
     return {"data": "send message successful"}
+
+
+@app.route("/receive")
+def send_message():
+    res = dasimamq.test_exchange.send_message_and_recevie_result(
+        data={"x": 1, "y": 2},
+        routing_key="test_routing_key"
+    )
+    return {"result": res}
 
 
 if __name__ == "__main__":

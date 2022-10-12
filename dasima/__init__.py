@@ -7,6 +7,9 @@ from dasima.exchange import ExchangeWrapper
 from dasima.worker import Worker
 
 
+__version__ = "1.0.0"
+
+
 class Dasima:
   def __init__(self, app=None):
     self.app = app
@@ -36,6 +39,7 @@ class Dasima:
           self,
           exchange_name,
           ExchangeWrapper(
+              self.app,
               exchange_name,
               exchange_type,
               self.worker
