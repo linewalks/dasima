@@ -7,14 +7,14 @@ from dasima import Dasima
 
 
 class TestSetup:
-  def test_init_app(self, flask_app):
-    dasmia1 = Dasima(flask_app)
+  def test_init_app(self, app):
+    dasmia1 = Dasima(app)
     dasmia2 = Dasima()
-    dasmia2.init_app(flask_app)
+    dasmia2.init_app(app)
     assert dasmia1.app == dasmia2.app
 
-  def test_create_exchange(self, exchange_setting_list, flask_app):
-    dasima = Dasima(flask_app)
+  def test_create_exchange(self, exchange_setting_list, app):
+    dasima = Dasima(app)
     for exchange_name, exchange_type in exchange_setting_list:
       exchange = getattr(dasima, exchange_name)
       assert exchange.exchange_type == exchange_type
@@ -23,8 +23,8 @@ class TestSetup:
 
 class TestSubscribe:
   @pytest.fixture(scope="function")
-  def dasima(self, flask_app):
-    return Dasima(flask_app)
+  def dasima(self, app):
+    return Dasima(app)
 
   def test_subscribe_exist_routing_key(self, dasima):
     @dasima.exchange_type_one.subscribe("test")
@@ -52,16 +52,16 @@ class TestSubscribe:
 
 class TestMessageSendReceive:
   @pytest.fixture(scope="function")
-  def sub1(self, flask_app):
-    return Dasima(flask_app)
+  def sub1(self, app):
+    return Dasima(app)
 
   @pytest.fixture(scope="function")
-  def sub2(self, flask_app):
-    return Dasima(flask_app)
+  def sub2(self, app):
+    return Dasima(app)
 
   @pytest.fixture(scope="function")
-  def pub(self, flask_app):
-    return Dasima(flask_app)
+  def pub(self, app):
+    return Dasima(app)
 
   @pytest.mark.parametrize("number", [2, 10, 100])
   def test_exchange_type_one_recive(self, sub1, sub2, pub, number):

@@ -1,7 +1,5 @@
-import random
-
-from flask import Flask
 from dasima import Dasima
+from flask import Flask
 
 
 dasimamq = Dasima()
@@ -15,24 +13,30 @@ def create_app():
       "DASIMA_EXCHANGE_SETTING": [("clue", "one"), ("login", "all")]
   })
 
-  dasimamq.init_app(app)  # Alternatively, auto init_app is possible by putting the flask app directly into Dasima(app).
+  dasimamq.init_app(app)  # Alternatively, auto init_app can be used after putting the flask app into Dasima like Dasima(app).
+
   with app.app_context():
-    def test_function():
-      dasimamq.clue.send_message({"x": 3, "y": 3}, "add")
-      dasimamq.login.send_message({"x": 3, "y": 3}, "mul")
 
-      input = random.randint(0, 10000)
-      output = dasimamq.clue.send_message_and_recevie_result({"x": input}, "linear")
-      assert input == output
+    @dasimamq.clue.subscribe("add")
+    def add_funtion(x, y):
+      print("ADD", x, y)
+      return x + y
 
-    @app.route("/")
-    def test_home():
-      test_function()
-      return {"data": "Send message successful"}
+    @dasimamq.login.subscribe("mul")
+    def mul_funtion(x, y):
+      print("MUL", x, y)
+      return x * y
+
+    @dasimamq.clue.subscribe("linear")
+    def linear_function(x):
+      y = x
+      return y
 
   return app
 
 
 if __name__ == "__main__":
+ # Call the function 'run_subscribers' to create queues in which consumers process the messages.
   app = create_app()
+  dasimamq.run_subscribers()
   app.run(port=5000)
