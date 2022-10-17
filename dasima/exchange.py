@@ -1,3 +1,4 @@
+from collections import defaultdict
 from flask.app import Flask
 from kombu import (
     binding,
@@ -26,7 +27,7 @@ class ExchangeWrapper:
         type="topic",
         durable=True
     )
-    self.__binding_dict = {}
+    self.__binding_dict = defaultdict(list)
     self._connection = connection
     self.accept_type = self.app.config.get("DASIMA_ACCEPT_TYPE", "json")
     self.producer_worker = ProducerWorker(
@@ -76,10 +77,7 @@ class ExchangeWrapper:
 
     routing_key = func.__name__ if routing_key is None else routing_key
 
-    if self.__binding_dict.get(queue_name):
-      self.__binding_dict[queue_name].append((routing_key, func))
-    else:
-      self.__binding_dict[queue_name] = [(routing_key, func)]
+    self.__binding_dict[queue_name].append((routing_key, func))
 
   def subscribe(self, routing_key=None):
     if callable(routing_key):

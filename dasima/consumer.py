@@ -58,4 +58,3 @@ class ConsumerWorker(ConsumerMixin):
   def stop(self):
     self.should_stop = True
     self.connection.release()
-    time.sleep(0.5)
