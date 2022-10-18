@@ -15,3 +15,8 @@ def flask_app(exchange_setting_list):
   app = Flask(__name__)
   app.config["DASIMA_EXCHANGE_SETTING"] = exchange_setting_list
   return app
+
+@pytest.fixture(scope="module")
+def app(flask_app):
+  with flask_app.app_context():
+    yield flask_app

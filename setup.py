@@ -2,8 +2,6 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name="dasima",
-    version="0.2.0",
     description="Message Queue Tools for flask project",
     author="Linewalks",
     author_email="jindex2411@linewalks.com",
@@ -19,5 +17,5 @@ setup(
     setup_requires=["pytest-runner"],
     test_suite="tests",
     tests_require=["pytest"],
-    packages=find_packages(include=["dasima"])
+    packages=find_packages(exclude=["tests*"])
 )
