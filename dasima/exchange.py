@@ -1,3 +1,4 @@
+from typing import Callable, List
 from collections import defaultdict
 from flask.app import Flask
 from kombu import (
@@ -18,7 +19,8 @@ class ExchangeWrapper:
       app: Flask,
       connection: Connection,
       exchange_name: str,
-      exchange_type: str
+      exchange_type: str,
+      after_work_list: List[Callable]
   ):
     self.app = app
     self.exchange_type = exchange_type
@@ -38,6 +40,7 @@ class ExchangeWrapper:
         connection=self._connection.clone(),
         accept_type=self.accept_type,
     )
+    self.after_work_list = after_work_list
     self.register_rpc_send_message()
 
   @property
@@ -58,9 +61,9 @@ class ExchangeWrapper:
   def send_message(self, data, routing_key):
     self.producer_worker.send_message(data, routing_key, self.exchange)
 
-  def __send_message_and_recevie_result(self, data, routing_key):
+  def __send_message_and_recevie_result(self, data, routing_key, timeout=5):
     try:
-      return self.producer_worker.call(data, routing_key, self.exchange)
+      return self.producer_worker.call(data, routing_key, self.exchange, timeout)
     except Exception as err:
       """
       BackLog: 추가적인 에러 처리 필요
@@ -123,6 +126,9 @@ class ExchangeWrapper:
                 )
           finally:
             message.ack()
+
+          for after_work in self.after_work_list:
+            after_work(body, message, result)
 
       queue = Queue(
           name=queue_name,
