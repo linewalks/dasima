@@ -20,7 +20,7 @@ class ExchangeWrapper:
       connection: Connection,
       exchange_name: str,
       exchange_type: str,
-      after_work_list: List[Callable]
+      after_task_list: List[Callable]
   ):
     self.app = app
     self.exchange_type = exchange_type
@@ -40,7 +40,7 @@ class ExchangeWrapper:
         connection=self._connection.clone(),
         accept_type=self.accept_type,
     )
-    self.after_work_list = after_work_list
+    self.after_task_list = after_task_list
     self.register_rpc_send_message()
 
   @property
@@ -127,8 +127,8 @@ class ExchangeWrapper:
           finally:
             message.ack()
 
-          for after_work in self.after_work_list:
-            after_work(body, message, result)
+          for after_task in self.after_task_list:
+            after_task(body, message, result)
 
       queue = Queue(
           name=queue_name,
