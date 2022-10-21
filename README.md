@@ -71,7 +71,7 @@ def after_work_func(data, message, result):
 """
 
 def after_work_func(data, message, result):
-    print("working after on task")
+    print("working after on task...")
 
 dasimamq.resgiter_after_work(after_work_func)
 
