@@ -15,7 +15,7 @@ def create_app():
 
   dasimamq.init_app(app)  # Alternatively, auto init_app can be used after putting the flask app into Dasima like Dasima(app).
 
-  @dasimamq.after_subscriber_task
+  @dasimamq.after_subscribe_task
   def after_work(data, message, result):
     print(f"exchange {message.delivery_info['exchange']} {message.delivery_info['routing_key']} 요청")
     print(f"{data} 전송, 처리 결과 {result}")

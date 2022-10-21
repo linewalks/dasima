@@ -44,10 +44,10 @@ class Dasima:
     self.is_running = False
 
   @setupmethod
-  def after_subscriber_task(self, f):
-    self.register_after_subscriber_task(f)
+  def after_subscribe_task(self, f):
+    self.register_after_subscribe_task(f)
 
-  def register_after_subscriber_task(self, func: Callable):
+  def register_after_subscribe_task(self, func: Callable):
     self.__after_task_list.append(func)
 
   def register_exchange(self):
