@@ -47,7 +47,7 @@ class ProducerWorker:
           reply_to=callback_queue.name if callback_queue else None
       )
 
-  def call(self, data, routing_key, exchange):
+  def call(self, data, routing_key, exchange, timeout=5):
     callback = CallbackResponse()
     callback_uuid = uuid()
 
@@ -76,6 +76,6 @@ class ProducerWorker:
         no_ack=True
     ):
       while callback.response is None:
-        self.connection.drain_events(timeout=10)
+        self.connection.drain_events(timeout=timeout)
 
     return callback.response

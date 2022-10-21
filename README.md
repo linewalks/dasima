@@ -64,6 +64,16 @@ app.config.update({
 dasimamq = Dasima()
 dasimamq.init_app(app) # Alternatively, auto init_app can be used after putting the flask app into Dasima like Dasima(app).
 
+"""same as
+@dasimamq.after_subscribe_task
+def after_work_func(data, message, result):
+    print("working after on task")
+"""
+
+def after_task_func(data, message, result):
+    print("working after on task...")
+
+dasimamq.resgiter_after_subscribe_task(after_task_func)
 
 # Be able to subscribe target functions using the function 'subscribe' 
 # The queue named by subscribed function name will be made, and binding it with routing key
@@ -122,7 +132,6 @@ def send_message():
 if __name__ == "__main__":
     app.run(port=5000)
 ```
-
 
 
 ## Links

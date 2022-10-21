@@ -1,18 +1,28 @@
 import time
 import threading
 
+from functools import update_wrapper
+from typing import Callable
+
 from flask import g
 from kombu import Connection
 
 from dasima.exchange import ExchangeWrapper
 
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
+
+
+def setupmethod(f):
+  def wrapper_func(self, *args, **kwargs):
+    return f(self, *args, **kwargs)
+  return update_wrapper(wrapper_func, f)
 
 
 class Dasima:
   def __init__(self, app=None):
     self.app = app
+    self.__after_task_list = []
     if app:
       self.init_app(app)
 
@@ -29,8 +39,16 @@ class Dasima:
         [("dasima_test", "one")]
     )
     self.connection = Connection(self.app.config.get("DASIMA_CONNECTION_HOST", "localhost"))
+
     self.register_exchange()
     self.is_running = False
+
+  @setupmethod
+  def after_subscribe_task(self, f):
+    self.register_after_subscribe_task(f)
+
+  def register_after_subscribe_task(self, func: Callable):
+    self.__after_task_list.append(func)
 
   def register_exchange(self):
     for exchange_name, exchange_type in self.exchange_setting_list:
@@ -42,6 +60,7 @@ class Dasima:
               self.connection,
               exchange_name,
               exchange_type,
+              self.__after_task_list
           )
       )
 
