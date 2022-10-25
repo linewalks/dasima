@@ -1,4 +1,7 @@
+import traceback
+
 from typing import Callable, List
+from threading import Thread
 from collections import defaultdict
 from flask.app import Flask
 from kombu import (
@@ -64,12 +67,12 @@ class ExchangeWrapper:
   def __send_message_and_recevie_result(self, data, routing_key, timeout=5):
     try:
       return self.producer_worker.call(data, routing_key, self.exchange, timeout)
-    except Exception as err:
+    except Exception:
       """
       BackLog: 추가적인 에러 처리 필요
       에러 발생시 클라이언트에서 지장이 없도록 None으로 반환
       """
-      print(err)
+      traceback.print_exc()
       return None
 
   def add_binding_dict(self, func, routing_key):
@@ -114,21 +117,28 @@ class ExchangeWrapper:
 
       def on_task(body, message):
         routing_key = message.delivery_info["routing_key"]
-        with self.app.app_context():
-          try:
-            if func is not None:
-              result = func(body, routing_key)
-              if message.properties.get("reply_to"):
-                self.producer_worker.send_message(
-                    {"result": result},
-                    exchange=self.exchange,
-                    routing_key=message.properties["reply_to"]
-                )
-          finally:
-            message.ack()
 
-          for after_task in self.after_task_list:
-            after_task(body, message, result)
+        def on_task_operation_func():
+          with self.app.app_context():
+            try:
+              if func is not None:
+                result = func(body, routing_key)
+                if message.properties.get("reply_to"):
+                  self.producer_worker.send_message(
+                      {"result": result},
+                      exchange=self.exchange,
+                      routing_key=message.properties["reply_to"]
+                  )
+            except Exception:
+              traceback.print_exc()
+            finally:
+              message.ack()
+
+            for after_task in self.after_task_list:
+              after_task(body, message, result)
+
+        t = Thread(target=on_task_operation_func, daemon=True)
+        t.run()
 
       queue = Queue(
           name=queue_name,
