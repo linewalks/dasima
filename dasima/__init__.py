@@ -10,7 +10,7 @@ from kombu import Connection
 from dasima.exchange import ExchangeWrapper
 
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 
 def setupmethod(f):
