@@ -1,3 +1,6 @@
+import sys
+sys.path.append(".")
+
 import random
 
 from flask import Flask
@@ -5,14 +8,20 @@ from dasima import Dasima
 
 
 dasimamq = Dasima()
+dasima2mq = Dasima()
 
 
 def create_app():
   app = Flask(__name__)
   app.config.update({
-      "DASIMA_CONNECTION_HOST": "pyamqp://localhost:5672",
+      "DASIMA_CONNECTION_HOST": "pyamqp://localhost:5674",
       "DASIMA_ACCEPT_TYPE": "json",
-      "DASIMA_EXCHANGE_SETTING": [("clue", "one"), ("login", "all")]
+      "DASIMA_EXCHANGE_SETTING": [("clue", "one"), ("login", "all")],
+      "DASIMA_ADDITIONAL_CONNECTION":[{
+          "DASIMA_CONNECTION_HOST": "pyamqp://localhost:5673",
+          "DASIMA_ACCEPT_TYPE": "json",
+          "DASIMA_EXCHANGE_SETTING": [("additional", "one")],
+      }]
   })
 
   dasimamq.init_app(app)  # Alternatively, auto init_app is possible by putting the flask app directly into Dasima(app).
@@ -23,8 +32,9 @@ def create_app():
 
       input = random.randint(0, 10000)
       output = dasimamq.clue.send_message_and_recevie_result({"x": input}, "linear")
-      print(input, output)
       assert input == output
+      output = dasimamq.additional.send_message_and_recevie_result({"x": input}, "additional")
+      assert 2 * input == output
 
     @app.route("/")
     def test_home():

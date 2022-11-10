@@ -10,7 +10,7 @@ from kombu import Connection
 from dasima.exchange import ExchangeWrapper
 
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 
 def setupmethod(f):
@@ -23,6 +23,7 @@ class Dasima:
   def __init__(self, app=None):
     self.app = app
     self.__after_task_list = []
+    self.exchange_list = []
     if app:
       self.init_app(app)
 
@@ -32,14 +33,17 @@ class Dasima:
     @app.teardown_appcontext
     def close_connection(error):
       if hasattr(g, "_dasima_connection"):
-        g._dasima_connection.close()
-
-    self.exchange_setting_list = self.app.config.get(
-        "DASIMA_EXCHANGE_SETTING",
-        [("dasima_test", "one")]
+        for connection in g._dasima_connection.values():
+          connection.close()
+    
+    self.exchange_setting_list = [{
+        "DASIMA_EXCHANGE_SETTING": self.app.config.get("DASIMA_EXCHANGE_SETTING", [("dasima_test", "one")]),
+        "DASIMA_CONNECTION_HOST": self.app.config.get("DASIMA_CONNECTION_HOST", "localhost"),
+        "DASIMA_ACCEPT_TYPE": self.app.config.get("DASIMA_ACCEPT_TYPE", "json")
+    }] + self.app.config.get(
+        "DASIMA_ADDITIONAL_CONNECTION",
+        []
     )
-    self.connection = Connection(self.app.config.get("DASIMA_CONNECTION_HOST", "localhost"))
-
     self.register_exchange()
     self.is_running = False
 
@@ -51,23 +55,24 @@ class Dasima:
     self.__after_task_list.append(func)
 
   def register_exchange(self):
-    for exchange_name, exchange_type in self.exchange_setting_list:
-      setattr(
-          self,
-          exchange_name,
-          ExchangeWrapper(
-              self.app,
-              self.connection,
-              exchange_name,
-              exchange_type,
-              self.__after_task_list
-          )
-      )
+    for exchange_setting in self.exchange_setting_list:
+      host = exchange_setting["DASIMA_CONNECTION_HOST"]
+      exchange_list = exchange_setting["DASIMA_EXCHANGE_SETTING"]
+      connection = Connection(host)
+      for exchange_name, exchange_type in exchange_list:
+        setattr(
+            self,
+            exchange_name,
+            ExchangeWrapper(
+                self.app,
+                connection,
+                exchange_name,
+                exchange_type,
+                self.__after_task_list
+            )
+        )
+        self.exchange_list.append(getattr(self, exchange_name))
 
-    self.exchange_list = [
-        getattr(self, exchange_name)
-        for exchange_name, _ in self.exchange_setting_list
-    ]
 
   def run_subscribers(self):
     if self.is_running:
