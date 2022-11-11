@@ -52,7 +52,7 @@ class ProducerWorker:
           reply_to=callback_queue.name if callback_queue else None
       )
 
-  def call(self, data, routing_key, exchange, timeout=10):
+  def call(self, data, routing_key, exchange, timeout=5):
     callback = CallbackResponse()
     callback_uuid = uuid()
 
@@ -73,7 +73,7 @@ class ProducerWorker:
         exchange,
         callback_queue=callback_queue
     )
-  
+
     with Consumer(
         self.connection,
         on_message=on_response,
