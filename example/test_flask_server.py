@@ -1,3 +1,6 @@
+import sys
+sys.path.append(".")
+
 from dasima import Dasima
 from flask import Flask
 
@@ -10,7 +13,12 @@ def create_app():
   app.config.update({
       "DASIMA_CONNECTION_HOST": "pyamqp://localhost:5672",
       "DASIMA_ACCEPT_TYPE": "json",
-      "DASIMA_EXCHANGE_SETTING": [("clue", "one"), ("login", "all")]
+      "DASIMA_EXCHANGE_SETTING": [("clue", "one"), ("login", "all")],
+      # "DASIMA_ADDITIONAL_CONNECTION": [{
+      #     "DASIMA_CONNECTION_HOST": "pyamqp://localhost:5673",
+      #     "DASIMA_ACCEPT_TYPE": "json",
+      #     "DASIMA_EXCHANGE_SETTING": [("additional", "one")],
+      # }] # additional connection settings
   })
 
   dasimamq.init_app(app)  # Alternatively, auto init_app can be used after putting the flask app into Dasima like Dasima(app).
@@ -42,4 +50,4 @@ if __name__ == "__main__":
  # Call the function 'run_subscribers' to create queues in which consumers process the messages.
   app = create_app()
   dasimamq.run_subscribers()
-  app.run(port=5000)
+  app.run(port=5002)

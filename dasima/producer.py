@@ -16,19 +16,24 @@ class CallbackResponse:
 class ProducerWorker:
   def __init__(
       self,
+      exchange_name: str,
       connection: Connection,
       accept_type: str
   ):
+    self.exchange_name = exchange_name
     self._connection = connection
     self.accept_type = accept_type
 
   @property
   def connection(self):
     if hasattr(g, "_dasima_connection"):
-      return g._dasima_connection
-    g._dasima_connection = self._connection.clone()
-    g._dasima_connection.ensure_connection(max_retries=1)
-    return g._dasima_connection
+      if not g._dasima_connection.get(self.exchange_name):
+        g._dasima_connection[self.exchange_name] = self._connection.clone()
+        g._dasima_connection[self.exchange_name].ensure_connection(max_retries=1)
+      return g._dasima_connection[self.exchange_name]
+    g._dasima_connection = {self.exchange_name: self._connection.clone()}
+    g._dasima_connection[self.exchange_name].ensure_connection(max_retries=1)
+    return g._dasima_connection[self.exchange_name]
 
   def send_message(
       self,

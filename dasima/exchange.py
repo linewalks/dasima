@@ -36,6 +36,7 @@ class ExchangeWrapper:
     self._connection = connection
     self.accept_type = self.app.config.get("DASIMA_ACCEPT_TYPE", "json")
     self.producer_worker = ProducerWorker(
+        exchange_name=exchange_name,
         connection=self._connection,
         accept_type=self.accept_type
     )
@@ -119,6 +120,7 @@ class ExchangeWrapper:
         routing_key = message.delivery_info["routing_key"]
 
         def on_task_operation_func():
+          result = None
           with self.app.app_context():
             try:
               if func is not None:
